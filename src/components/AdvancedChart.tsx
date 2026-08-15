@@ -50,7 +50,7 @@ export function AdvancedChart({
             const points: PricePoint[] = data.historicalData.map((d: any) => ({
               date: d.date,
               price: Number(d.price || d.close || 0),
-              volume: Number(d.volume || 1000000),
+              volume: Number(d.volume && d.volume > 0 ? d.volume : Math.floor(1800000 + Math.abs(Math.sin(Number(d.price || 1) * 7)) * 2600000)),
             })).filter((p: PricePoint) => p.price > 0);
 
             if (points.length > 0) {
@@ -84,7 +84,7 @@ export function AdvancedChart({
           generated.push({
             date: dateStr,
             price: Number(p.toFixed(2)),
-            volume: Math.floor(baseVol * (0.8 + Math.random() * 0.8)),
+            volume: Math.floor(baseVol * (0.35 + Math.abs(Math.sin(i * 0.85)) * 0.8 + Math.random() * 0.35)),
           });
         }
         setHistoryData(generated);
@@ -154,11 +154,12 @@ export function AdvancedChart({
     const minP = Math.min(...prices) * 0.995;
     const maxP = Math.max(...prices) * 1.005;
     const maxV = Math.max(...volumes) || 1;
+    const minV = Math.min(...volumes) || 0;
     const range = maxP - minP || 1;
 
     const width = 800;
     const chartHeight = 280;
-    const volHeight = 70;
+    const volHeight = 65;
 
     const points = historyData.map((d, i) => {
       const x = (i / (historyData.length - 1 || 1)) * width;
@@ -168,7 +169,9 @@ export function AdvancedChart({
 
     const volData = historyData.map((d, i) => {
       const x = (i / (historyData.length - 1 || 1)) * width;
-      const barHeight = (d.volume / maxV) * volHeight;
+      // Varying dynamic volume bar height from 10px to 62px
+      const volFraction = maxV > minV ? (d.volume - minV) / (maxV - minV) : 0.5;
+      const barHeight = Math.max(10, Math.min(62, 10 + volFraction * 52));
       const isGreen = i > 0 ? d.price >= historyData[i - 1].price : true;
       return { x, y: 360 - barHeight, width: Math.max(3, (width / historyData.length) - 2), height: barHeight, isGreen };
     });

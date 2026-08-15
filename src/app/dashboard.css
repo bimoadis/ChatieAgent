@@ -145,19 +145,122 @@
   text-transform: uppercase;
 }
 
-.dash-model-select {
+.dash-custom-dropdown-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.dash-custom-dropdown-trigger {
   width: 100%;
   padding: 9px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12.5px;
+  font-weight: 600;
   color: var(--ink);
   background: var(--card);
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+}
+
+.dash-custom-dropdown-trigger:hover {
+  border-color: var(--ink);
+  background: var(--panel);
+}
+
+.dash-cdt-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-cdt-chevron {
+  color: var(--muted);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.dash-cdt-chevron.open {
+  transform: rotate(180deg);
+}
+
+.dash-custom-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.15), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+  padding: 5px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: dropdownPopup 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropdownPopup {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dash-cd-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+}
+
+.dash-cd-item:hover {
+  background: var(--panel);
+}
+
+.dash-cd-item.selected {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.dash-cd-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dash-cd-item-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dash-cd-item.selected .dash-cd-item-label {
+  color: #2563EB;
+}
+
+.dash-cd-item-tag {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 .dash-node-active {
@@ -227,13 +330,60 @@
 
 /* ---------- SYSTEM OVERVIEW VIEW ---------- */
 .dash-hero {
-  padding: 36px;
+  padding: 8px 0 20px 0;
   position: relative;
   overflow: hidden;
-  margin-bottom: 22px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--r);
+  margin-bottom: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  min-height: 140px;
+}
+
+.dash-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 580px;
+}
+
+.dash-hero-greet {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.dash-hero h1 {
+  font-size: 32px;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--ink);
+}
+
+.dash-hero h1 span {
+  color: #2563EB;
+}
+
+.dash-hero p {
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.dash-hero-right {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .dash-status-pill {
@@ -241,35 +391,40 @@
   align-items: center;
   gap: 7px;
   font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .06em;
-  color: var(--up);
-  background: rgba(14, 126, 72, .08);
-  border: 1px solid rgba(14, 126, 72, .25);
-  padding: 5px 11px;
-  border-radius: 6px;
-  margin-bottom: 18px;
-}
-
-.dash-hero h1 {
-  font-size: 32px;
-  margin: 0 0 12px 0;
+  font-size: 11.5px;
   font-weight: 600;
-  letter-spacing: -.03em;
-  color: var(--ink);
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  padding: 6px 12px;
+  border-radius: 6px;
+  margin-bottom: 0;
 }
 
-.dash-hero h1 span {
-  color: var(--cobalt);
+.dash-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563EB;
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(37, 99, 235, 0.4);
 }
 
-.dash-hero p {
-  font-size: 15px;
-  color: var(--muted);
-  max-width: 620px;
-  line-height: 1.6;
-  margin: 0;
+.dash-hero-globe-bg {
+  position: absolute;
+  top: 10%;
+  right: 0;
+  bottom: -10%;
+  width: 65%;
+  background-image: url('/images/globe-hero.png');
+  background-size: 90% auto;
+  background-position: right 60%;
+  background-repeat: no-repeat;
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 1;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 15%, rgba(0, 0, 0, 1) 50%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 15%, rgba(0, 0, 0, 1) 50%);
 }
 
 .dash-ticker-grid {
@@ -286,12 +441,26 @@
   border-radius: var(--r);
 }
 
+.dash-ticker-sym-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.dash-ticker-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: transparent;
+}
+
 .dash-ticker-sym {
   font-family: var(--mono);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
   color: var(--muted);
-  margin-bottom: 10px;
   letter-spacing: .02em;
 }
 
@@ -497,16 +666,17 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  background: var(--panel);
+  background: #faf9f6;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 10px 6px;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .dash-fg-mini-card:hover {
   transform: translateY(-2px);
-  background: var(--card);
+  background: #faf9f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .dash-fg-mc-icon {
@@ -1606,6 +1776,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1677,6 +1848,7 @@
     transform: translateY(20px) scale(0.98);
     opacity: 0;
   }
+
   to {
     transform: translateY(0) scale(1);
     opacity: 1;

@@ -180,8 +180,8 @@ export function StockDetailView({
           onClick={onBack}
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <line x1="19" y1="12" x2="5" y2="12"/>
-            <polyline points="12 19 5 12 12 5"/>
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
           </svg>
           <span>Back to Data Logs</span>
         </button>
@@ -254,8 +254,8 @@ export function StockDetailView({
                   title="Run 19-agent quantitative swarm in Chatie Core"
                 >
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="4 17 10 11 4 5"/>
-                    <line x1="12" y1="19" x2="20" y2="19"/>
+                    <polyline points="4 17 10 11 4 5" />
+                    <line x1="12" y1="19" x2="20" y2="19" />
                   </svg>
                   AI Analyze
                 </button>
@@ -265,7 +265,7 @@ export function StockDetailView({
         </div>
 
         {/* Navigation Tabs (General, Chart, News, Financials, Technical) */}
-        <div className="dash-modal-tabs">
+        {/* <div className="dash-modal-tabs">
           {["General", "Chart", "News & Analysis", "Financials", "Technical", "Forum"].map((tab) => (
             <button
               key={tab}
@@ -276,10 +276,10 @@ export function StockDetailView({
               {tab}
             </button>
           ))}
-        </div>
+        </div> */}
 
         {/* Sub-tabs Row */}
-        <div className="dash-modal-subtabs">
+        {/* <div className="dash-modal-subtabs">
           {["Overview", "Profile", "Ownership", "Historical Data", "Options", "Index Component"].map((sub) => (
             <button
               key={sub}
@@ -290,7 +290,7 @@ export function StockDetailView({
               {sub}
             </button>
           ))}
-        </div>
+        </div> */}
 
         {/* Main Content Body (Split Chart + Scorecard) */}
         <div className="dash-modal-body">
@@ -300,7 +300,7 @@ export function StockDetailView({
               <div className="dash-chart-header">
                 <div className="dash-chart-title">
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                   </svg>
                   <span>Advanced Real-Time Interactive Chart</span>
                 </div>

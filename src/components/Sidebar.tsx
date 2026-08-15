@@ -1,29 +1,49 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { PersonaType } from "@/types"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { PersonaType } from "@/types";
 
 interface SidebarProps {
-  activeView: string
-  onViewChange: (view: string) => void
-  persona: PersonaType
-  onPersonaChange: (persona: PersonaType) => void
-  isOpen?: boolean
-  onClose?: () => void
+  activeView: string;
+  onViewChange: (view: string) => void;
+  persona: PersonaType;
+  onPersonaChange: (persona: PersonaType) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
+const PERSONA_OPTIONS: { value: PersonaType; label: string; tag: string }[] = [
+  { value: "conservative", label: "Conservative", tag: "Deep Value" },
+  { value: "balanced", label: "Balanced", tag: "Standard" },
+  { value: "aggressive", label: "Aggressive", tag: "High Growth" },
+];
+
 export function Sidebar({ activeView, onViewChange, persona, onPersonaChange, isOpen, onClose }: SidebarProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
   const handleItemClick = (view: string) => {
-    onViewChange(view)
-    if (onClose) onClose()
-  }
+    onViewChange(view);
+    if (onClose) onClose();
+  };
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  const currentOption = PERSONA_OPTIONS.find((o) => o.value === persona) || PERSONA_OPTIONS[1];
 
   return (
     <div className={`dash-sidebar ${isOpen ? "open" : ""}`}>
@@ -74,14 +94,11 @@ export function Sidebar({ activeView, onViewChange, persona, onPersonaChange, is
           </button>
 
           <button
-            className={`dash-nav-item ${activeView === "council" ? "active" : ""}`}
-            onClick={() => handleItemClick("council")}
+            className={`dash-nav-item ${activeView === "discussion" ? "active" : ""}`}
+            onClick={() => handleItemClick("discussion")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="9" cy="7" r="4" />
-              <path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" />
-              <circle cx="19" cy="8" r="3" />
-              <path d="M17 14a4 4 0 0 1 4 4v3" />
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
             Council Discussion
           </button>
@@ -118,6 +135,7 @@ export function Sidebar({ activeView, onViewChange, persona, onPersonaChange, is
         </div>
       </div>
 
+      {/* Sidebar Bottom Portfolio Risk Profile Dropdown */}
       <div className="dash-sidebar-bottom">
         <div className="dash-model-label">
           <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -126,16 +144,62 @@ export function Sidebar({ activeView, onViewChange, persona, onPersonaChange, is
           Portfolio Risk Profile
         </div>
 
-        <Select value={persona} onValueChange={(v) => onPersonaChange(v as PersonaType)}>
-          <SelectTrigger className="dash-model-select">
-            <SelectValue placeholder="Select Model" />
-          </SelectTrigger>
-          <SelectContent style={{ background: "var(--card)", border: "1px solid var(--line)" }}>
-            <SelectItem value="conservative" style={{ fontSize: 13 }}>Conservative (Deep Value)</SelectItem>
-            <SelectItem value="balanced" style={{ fontSize: 13 }}>Balanced (Standard)</SelectItem>
-            <SelectItem value="aggressive" style={{ fontSize: 13 }}>Aggressive (High Growth)</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Custom Clean Elevated Dropdown */}
+        <div className="dash-custom-dropdown-wrap" ref={dropdownRef}>
+          {/* Dropdown Menu Popup (Opens above trigger) */}
+          {dropdownOpen && (
+            <div className="dash-custom-dropdown-menu">
+              {PERSONA_OPTIONS.map((opt) => {
+                const isSelected = opt.value === persona;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className={`dash-cd-item ${isSelected ? "selected" : ""}`}
+                    onClick={() => {
+                      onPersonaChange(opt.value);
+                      setDropdownOpen(false);
+                    }}
+                  >
+                    <div className="dash-cd-item-text">
+                      <span className="dash-cd-item-label">{opt.label}</span>
+                      <span className="dash-cd-item-tag">({opt.tag})</span>
+                    </div>
+                    {isSelected && (
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#2563EB" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Dropdown Trigger Button */}
+          <button
+            type="button"
+            className="dash-custom-dropdown-trigger"
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            aria-haspopup="listbox"
+            aria-expanded={dropdownOpen}
+          >
+            <span className="dash-cdt-label">
+              {currentOption.label} <span style={{ color: "var(--muted)", fontWeight: 400 }}>({currentOption.tag})</span>
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={`dash-cdt-chevron ${dropdownOpen ? "open" : ""}`}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
 
         <div className="dash-node-active">
           <span className="dash-pulse"></span>
@@ -143,5 +207,5 @@ export function Sidebar({ activeView, onViewChange, persona, onPersonaChange, is
         </div>
       </div>
     </div>
-  )
+  );
 }

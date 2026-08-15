@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 
 const sparklineSvg = (points: number[], isPositive: boolean) => {
-  const w = 84, h = 32;
+  const w = 78, h = 28;
   if (!points || points.length === 0) return null;
   const max = Math.max(...points), min = Math.min(...points);
   const strokeColor = isPositive ? "#0E7E48" : "#DC2626";
@@ -15,7 +15,7 @@ const sparklineSvg = (points: number[], isPositive: boolean) => {
   }).join(' ');
 
   return (
-    <svg className="dash-sparkline" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible" }}>
+    <svg className="dash-sparkline" viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible", width: 78, height: 28 }}>
       <polyline
         points={norm}
         fill="none"
@@ -43,33 +43,33 @@ interface NewsItem {
 }
 
 const DEFAULT_TICKERS: TickerItem[] = [
-  { sym: 'SPY', price: '$776.34', chg: '+0.84%', isPositive: true, points: [768, 770, 769, 772, 775, 776.34] },
-  { sym: 'QQQ', price: '$731.07', chg: '+1.15%', isPositive: true, points: [722, 725, 724, 728, 730, 731.07] },
-  { sym: 'AAPL', price: '$305.93', chg: '+0.62%', isPositive: true, points: [302, 304, 303, 305, 305.93] },
-  { sym: 'NVDA', price: '$225.16', chg: '+2.14%', isPositive: true, points: [218, 220, 219, 224, 225.16] },
+  { sym: 'GOOGL', price: '$182.40', chg: '+1.12%', isPositive: true, points: [180.2, 180.8, 181.5, 181.2, 182.0, 182.40] },
+  { sym: 'MSFT', price: '$428.50', chg: '+0.85%', isPositive: true, points: [424.0, 425.5, 426.2, 427.0, 427.8, 428.50] },
+  { sym: 'AAPL', price: '$305.93', chg: '+0.22%', isPositive: true, points: [305.2, 305.4, 305.3, 305.6, 305.8, 305.93] },
+  { sym: 'NVDA', price: '$225.16', chg: '-0.06%', isPositive: false, points: [225.3, 225.2, 225.4, 225.1, 225.2, 225.16] },
 ];
 
 const DEFAULT_NEWS: NewsItem[] = [
-  { src: 'GuruFocus.com', text: "Ray Dalio's Top Q2 2026 Move: State Street SPDR S&P 500 ETF Trust at a 2.93% Portfolio Impact", link: "https://finance.yahoo.com" },
-  { src: 'Associated Press', text: "Tech equities surge as cloud and semiconductor enterprise capex reaches new record highs", link: "https://finance.yahoo.com" },
-  { src: 'The Wall Street Journal', text: "Federal Reserve evaluates liquidity framework amid resilient labor and corporate earnings", link: "https://finance.yahoo.com" },
-  { src: 'Motley Fool', text: "Jensen Huang outlines trillion-dollar AI infrastructure roadmap across global data centers", link: "https://finance.yahoo.com" },
+  { src: 'GuruFocus.com', text: "Alphabet Q2 Enterprise Cloud Capex Expands Alongside Gemini Neural Deployment", link: "https://finance.yahoo.com" },
+  { src: 'Associated Press', text: "Tech equities surge as Microsoft, Apple and semiconductor infrastructure reach new highs", link: "https://finance.yahoo.com" },
+  { src: 'The Wall Street Journal', text: "Federal Reserve evaluates liquidity framework amid resilient corporate earnings", link: "https://finance.yahoo.com" },
+  { src: 'Motley Fool', text: "Jensen Huang outlines trillion-dollar AI compute roadmap across global enterprise clusters", link: "https://finance.yahoo.com" },
 ];
 
 // 21 Dotted Arc items for Fear & Greed Index (Left: Red/Fear -> Right: Green/Greed)
 const GAUGE_DOTS = [
-  { angle: 0,   color: "#DC2626" }, // 0% Left (Extreme Fear)
-  { angle: 9,   color: "#DC2626" },
-  { angle: 18,  color: "#DC2626" },
-  { angle: 27,  color: "#EA580C" },
-  { angle: 36,  color: "#EA580C" },
-  { angle: 45,  color: "#F97316" },
-  { angle: 54,  color: "#F97316" },
-  { angle: 63,  color: "#EAB308" },
-  { angle: 72,  color: "#EAB308" },
-  { angle: 81,  color: "#CA8A04" },
-  { angle: 90,  color: "#CA8A04" }, // 50% Top Center (Neutral)
-  { angle: 99,  color: "#A3E635" },
+  { angle: 0, color: "#DC2626" }, // 0% Left (Extreme Fear)
+  { angle: 9, color: "#DC2626" },
+  { angle: 18, color: "#DC2626" },
+  { angle: 27, color: "#EA580C" },
+  { angle: 36, color: "#EA580C" },
+  { angle: 45, color: "#F97316" },
+  { angle: 54, color: "#F97316" },
+  { angle: 63, color: "#EAB308" },
+  { angle: 72, color: "#EAB308" },
+  { angle: 81, color: "#CA8A04" },
+  { angle: 90, color: "#CA8A04" }, // 50% Top Center (Neutral)
+  { angle: 99, color: "#A3E635" },
   { angle: 108, color: "#84CC16" },
   { angle: 117, color: "#65A30D" },
   { angle: 126, color: "#22C55E" },
@@ -98,7 +98,6 @@ export function DashboardView({ history }: DashboardViewProps) {
   const [newsData, setNewsData] = useState<NewsItem[]>(DEFAULT_NEWS);
   const [fearGreedScore, setFearGreedScore] = useState<number>(62);
   const [previousScore, setPreviousScore] = useState<number>(58);
-  const [timeframe, setTimeframe] = useState<string>("1D");
   const [isLiveFeed, setIsLiveFeed] = useState<boolean>(false);
   const [lastSyncTime, setLastSyncTime] = useState<string>("");
 
@@ -107,21 +106,24 @@ export function DashboardView({ history }: DashboardViewProps) {
 
     const fetchMarketFeed = async () => {
       try {
-        const res = await fetch("/api/stock?tickers=SPY,QQQ,AAPL,NVDA");
+        const res = await fetch("/api/stock?tickers=GOOGL,MSFT,AAPL,NVDA");
         if (res.ok) {
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0 && isMounted) {
             const rawStocks = json.data;
 
-            // 1. Process Real Tickers
+            // 1. Process Real Tickers with Real Historical Market Data Directly
             const updatedTickers: TickerItem[] = rawStocks.map((stock: any) => {
               const hist = stock.historicalData || [];
               const curr = stock.currentPrice || 0;
-              const prev = hist.length >= 2 ? hist[hist.length - 2].price : (curr * 0.995);
+              const prev = hist.length >= 2 ? hist[hist.length - 2].price : (curr * 0.998);
               const diff = curr - prev;
               const pct = (diff / (prev || 1)) * 100;
               const isPos = pct >= 0;
-              const points = hist.length > 0 ? hist.slice(-14).map((d: any) => d.price) : [curr * 0.99, curr];
+
+              // Use exact real historical close prices directly from Yahoo Finance API
+              const histPrices = hist.map((d: any) => Number(d.price)).filter((p: number) => !isNaN(p) && p > 0);
+              const points = histPrices.length > 0 ? histPrices.slice(-18) : [prev, curr];
 
               return {
                 sym: stock.symbol,
@@ -154,14 +156,9 @@ export function DashboardView({ history }: DashboardViewProps) {
               setNewsData(allNews.slice(0, 7));
             }
 
-            // 3. Compute Real Market Sentiment (Fear & Greed) from SPY & QQQ quant telemetry
-            const spyData = rawStocks.find((s: any) => s.symbol === "SPY") || rawStocks[0];
-            const qqqData = rawStocks.find((s: any) => s.symbol === "QQQ") || rawStocks[1];
-            
-            const spyRsi = spyData?.quantitative?.rsi14 || 59.6;
-            const qqqRsi = qqqData?.quantitative?.rsi14 || 58.4;
-            const avgRsi = (spyRsi + qqqRsi) / 2;
-            
+            // 3. Compute Real Market Sentiment (Fear & Greed) from Mega-Cap quant telemetry
+            const avgRsi = rawStocks.reduce((acc: number, s: any) => acc + (s.quantitative?.rsi14 || 58), 0) / rawStocks.length;
+
             // Scaled sentiment score (0 - 100)
             const computedScore = Math.min(95, Math.max(15, Math.round(avgRsi * 0.9 + 12)));
             setFearGreedScore(computedScore);
@@ -189,7 +186,7 @@ export function DashboardView({ history }: DashboardViewProps) {
   const { needleAngle, sentimentLabel, sentimentColor } = useMemo(() => {
     // 0 score = -90deg, 50 score = 0deg, 100 score = +90deg
     const angle = ((fearGreedScore / 100) * 180) - 90;
-    
+
     let label = "Neutral";
     let color = "#CA8A04";
 
@@ -219,26 +216,43 @@ export function DashboardView({ history }: DashboardViewProps) {
     <div>
       {/* Hero Banner */}
       <div className="dash-hero">
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="dash-hero-content">
+          <div className="dash-hero-greet">Welcome back to Chaties, Friends.</div>
+          <h1>Chatie <span>Core Terminal</span></h1>
+          <p>Institutional-grade quantitative analysis. Deploying multi-agent neural swarms to parse global market datasets in real-time.</p>
+        </div>
+
+        <div className="dash-hero-right">
           <div className="dash-status-pill">
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--up)", display: "inline-block" }}></span>
-            Status: {isLiveFeed ? "Live Feed" : "Online"}
+            <span className="dash-status-dot"></span>
+            Status: Online
           </div>
           {lastSyncTime && (
-            <span style={{ fontSize: 11, fontFamily: "var(--mono)", color: "var(--muted)" }}>
-              Synced {lastSyncTime}
+            <span style={{ fontSize: 11, fontFamily: "var(--mono)", color: "rgba(37, 99, 235, 0.75)", marginTop: 6, fontWeight: 500 }}>
+              Live Synced {lastSyncTime}
             </span>
           )}
         </div>
-        <h1>Chatie <span>Core Terminal</span></h1>
-        <p>Institutional-grade quantitative analysis. Deploying multi-agent neural swarms to parse global market datasets in real-time.</p>
+
+        {/* 3D Global Grid Sphere Background */}
+        <div className="dash-hero-globe-bg" />
       </div>
 
       {/* Ticker Grid */}
       <div className="dash-ticker-grid">
         {tickersData.map((t) => (
           <div key={t.sym} className="dash-ticker-card">
-            <div className="dash-ticker-sym">{t.sym}</div>
+            <div className="dash-ticker-sym-row">
+              <img
+                src={`/logos/${t.sym}.png`}
+                alt={t.sym}
+                className="dash-ticker-logo"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = "none";
+                }}
+              />
+              <span className="dash-ticker-sym">{t.sym}</span>
+            </div>
             <div className="dash-ticker-row">
               <div>
                 <div className="dash-ticker-price">{t.price}</div>
@@ -257,29 +271,16 @@ export function DashboardView({ history }: DashboardViewProps) {
 
       {/* Split Section */}
       <div className="dash-split">
-        {/* Fear & Greed Dotted Index Card (Matches Reference Image) */}
+        {/* Fear & Greed Dotted Index Card (Matches Reference Image, Dropdown Removed) */}
         <div className="dash-card dash-fg-main-card">
-          {/* Card Header with Timeframe Dropdown */}
+          {/* Card Header without Dropdown */}
           <div className="dash-fg-card-head">
             <div className="dash-panel-title" style={{ margin: 0 }}>
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2563EB" strokeWidth="2.2">
-                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
               </svg>
               <span>Fear &amp; Greed Index</span>
               <span className="dash-info-icon" title="Aggregated market sentiment calculated from momentum, volatility, and quantitative telemetry">ⓘ</span>
-            </div>
-
-            <div className="dash-fg-tf-dropdown">
-              <select
-                value={timeframe}
-                onChange={(e) => setTimeframe(e.target.value)}
-                className="dash-fg-select"
-              >
-                <option value="1D">1D</option>
-                <option value="1W">1W</option>
-                <option value="1M">1M</option>
-                <option value="1Y">1Y</option>
-              </select>
             </div>
           </div>
 
@@ -338,8 +339,8 @@ export function DashboardView({ history }: DashboardViewProps) {
               <div key={i} className="dash-fg-mini-card">
                 <div className="dash-fg-mc-icon" style={{ borderColor: card.color }}>
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke={card.color} strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="9"/>
-                    <polyline points="12 6 12 12 15 14"/>
+                    <circle cx="12" cy="12" r="9" />
+                    <polyline points="12 6 12 12 15 14" />
                   </svg>
                 </div>
                 <div className="dash-fg-mc-title">{card.label}</div>
@@ -353,10 +354,10 @@ export function DashboardView({ history }: DashboardViewProps) {
         <div className="dash-card">
           <div className="dash-panel-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M4 4h13l3 3v13H4z"/>
-              <line x1="8" y1="9" x2="16" y2="9"/>
-              <line x1="8" y1="13" x2="16" y2="13"/>
-              <line x1="8" y1="17" x2="12" y2="17"/>
+              <path d="M4 4h13l3 3v13H4z" />
+              <line x1="8" y1="9" x2="16" y2="9" />
+              <line x1="8" y1="13" x2="16" y2="13" />
+              <line x1="8" y1="17" x2="12" y2="17" />
             </svg>
             Recent Market News
           </div>
