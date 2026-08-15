@@ -545,6 +545,48 @@ h3.sub-title {
   padding: clamp(54px, 8vw, 100px) 0 clamp(40px, 6vw, 64px);
 }
 
+.ca-badge-wrapper {
+  margin-bottom: 14px;
+  display: inline-flex;
+  opacity: 0;
+  animation: wordIn 0.7s 0.02s forwards;
+}
+
+.ca-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  width: auto;
+  max-width: 100%;
+}
+
+.ca-badge:hover {
+  border-color: var(--cobalt);
+  background: var(--paper);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(30, 77, 216, 0.08);
+}
+
+.ca-badge:active {
+  transform: translateY(0);
+}
+
+.ca-badge.copied {
+  border-color: var(--up);
+  background: rgba(14, 126, 72, 0.06);
+}
+
 .hero .eyebrow {
   margin-bottom: 20px;
   opacity: 0;

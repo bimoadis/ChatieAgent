@@ -12,6 +12,7 @@ import { CodePanel } from "@/components/landing/CodePanel";
 import { LimitsNote } from "@/components/landing/LimitsNote";
 import { ModeToggle } from "@/components/landing/ModeToggle";
 import { Footer } from "@/components/landing/Footer";
+import { CaBadge } from "@/components/landing/CaBadge";
 
 export default function LandingPage() {
   const [activeSec, setActiveSec] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export default function LandingPage() {
           {/* ============ HERO ============ */}
           <div className="wrap hero">
             <div>
+              <CaBadge address="2aP9mKoc7Jb88En1FwQxkuzMM2TyB9LpaVPiFaqepump" />
               <div className="eyebrow">Multi-agent equity research</div>
               <h1 className="hero-title" id="heroline">
                 {heroWords.map((word, i) => (
