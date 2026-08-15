@@ -1,152 +1,254 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import React from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { AgentInsight } from "@/types"
-import { cn, getDecisionColor } from "@/lib/utils"
-import { TrendingUp, TrendingDown, Minus, User, Briefcase, Activity, ShieldAlert, Terminal } from "lucide-react"
+} from "@/components/ui/dialog";
+import { AgentInsight } from "@/types";
+import { Briefcase, Activity, ShieldAlert, Zap } from "lucide-react";
 
 interface AgentCardProps {
-  agent: AgentInsight
-  compact?: boolean
+  agent: AgentInsight;
+  compact?: boolean;
 }
 
 const agentIcons: Record<string, React.ReactNode> = {
-  value: <Briefcase className="w-4 h-4" />,
-  growth: <TrendingUp className="w-4 h-4" />,
-  quant: <Activity className="w-4 h-4" />,
-  sentiment: <ShieldAlert className="w-4 h-4" />,
-}
+  value: <Briefcase className="w-4 h-4 text-emerald-600" />,
+  growth: <Zap className="w-4 h-4 text-blue-600" />,
+  quant: <Activity className="w-4 h-4 text-purple-600" />,
+  sentiment: <ShieldAlert className="w-4 h-4 text-amber-600" />,
+};
 
 export function AgentCard({ agent, compact = false }: AgentCardProps) {
-  const decisionClass = getDecisionColor(agent.decision)
+  const isBuy = agent.decision === "BUY";
+  const isSell = agent.decision === "SELL";
 
-  const DecisionIcon = agent.decision === "BUY"
-    ? TrendingUp
-    : agent.decision === "SELL"
-    ? TrendingDown
-    : Minus
+  const decisionBg = isBuy
+    ? "rgba(14, 126, 72, 0.08)"
+    : isSell
+    ? "rgba(220, 38, 38, 0.08)"
+    : "rgba(202, 138, 4, 0.08)";
+  const decisionColor = isBuy ? "#0E7E48" : isSell ? "#DC2626" : "#CA8A04";
+  const decisionBorder = isBuy
+    ? "rgba(14, 126, 72, 0.25)"
+    : isSell
+    ? "rgba(220, 38, 38, 0.25)"
+    : "rgba(202, 138, 4, 0.25)";
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Card className="cursor-pointer group hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 bg-white border border-[#E7E5DE] hover:border-[#1E4DD8]/40">
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-[#FAF9F6] group-hover:bg-[#1E4DD8]/10 transition-colors border border-[#E7E5DE] text-[#6F6E69] group-hover:text-[#1E4DD8]">
-                  {agentIcons[agent.agent] || <User className="w-4 h-4" />}
+        <div
+          style={{
+            background: "#FAF9F6",
+            border: "1px solid var(--line)",
+            borderRadius: "12px",
+            padding: "16px 18px",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+          className="dash-agent-box group hover:-translate-y-1 hover:shadow-md hover:border-blue-500/40"
+        >
+          <div>
+            {/* Top Bar: Icon + Name + Decision Badge */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: "#ffffff",
+                    border: "1px solid var(--line)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+                  }}
+                >
+                  {agentIcons[agent.agent] || <Activity className="w-4 h-4 text-blue-600" />}
                 </div>
-                <CardTitle className="text-sm font-bold text-[#141413] group-hover:text-[#1E4DD8] transition-colors">
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: "var(--ink)", letterSpacing: "-0.01em" }}>
                   {agent.name}
-                </CardTitle>
-              </div>
-              <Badge className={cn("font-bold text-[11px] shadow-none", decisionClass)}>
-                <DecisionIcon className="w-3 h-3 mr-1" />
-                {agent.decision}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs mb-1.5">
-                  <span className="text-[#A3A29B] font-semibold uppercase tracking-wider text-[10px] font-[family-name:var(--font-geist-mono)]">
-                    Conviction Score
-                  </span>
-                  <span className="font-bold font-[family-name:var(--font-geist-mono)] text-[#141413] tabular-nums">
-                    {agent.confidence}%
-                  </span>
-                </div>
-                <div className="h-1.5 bg-[#EFEDE6] rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all duration-700",
-                      agent.decision === "BUY" ? "bg-[#0E7E48]" : agent.decision === "SELL" ? "bg-[#B42318]" : "bg-[#1E4DD8]"
-                    )}
-                    style={{ width: `${agent.confidence}%` }}
-                  />
                 </div>
               </div>
 
-              {!compact && (
-                <p className="text-xs text-[#6F6E69] leading-relaxed line-clamp-3">
-                  {agent.reasoning}
-                </p>
-              )}
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "3px 8px",
+                  borderRadius: 6,
+                  fontSize: 11,
+                  fontFamily: "var(--mono)",
+                  fontWeight: 700,
+                  background: decisionBg,
+                  color: decisionColor,
+                  border: `1px solid ${decisionBorder}`,
+                }}
+              >
+                {isBuy ? "▲" : isSell ? "▼" : "◆"} {agent.decision}
+              </div>
             </div>
-            
-            <div className="mt-3 pt-2.5 border-t border-[#EFEDE6] text-[10px] text-[#A3A29B] uppercase tracking-widest font-semibold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-[family-name:var(--font-geist-mono)]">
-               View Full Dossier →
+
+            {/* Conviction Bar */}
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                <span style={{ fontSize: 10, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 600, color: "var(--faint)", letterSpacing: "0.04em" }}>
+                  Conviction Score
+                </span>
+                <span style={{ fontSize: 12, fontFamily: "var(--mono)", fontWeight: 700, color: "var(--ink)" }}>
+                  {agent.confidence}%
+                </span>
+              </div>
+              <div style={{ height: 5, background: "#E2E8F0", borderRadius: 3, overflow: "hidden" }}>
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${agent.confidence}%`,
+                    borderRadius: 3,
+                    background: isBuy ? "#0E7E48" : isSell ? "#DC2626" : "#2563EB",
+                    transition: "width 0.6s ease",
+                  }}
+                />
+              </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Reasoning Paragraph */}
+            {!compact && (
+              <p style={{ fontSize: 12.5, lineHeight: 1.55, color: "var(--muted)", margin: 0 }}>
+                {agent.reasoning}
+              </p>
+            )}
+          </div>
+
+          <div style={{ marginTop: 12, paddingTop: 8, borderTop: "1px solid rgba(0,0,0,0.04)", fontSize: 10.5, fontFamily: "var(--mono)", color: "var(--cobalt)", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span>Inspect Agent Thesis</span>
+            <span>→</span>
+          </div>
+        </div>
       </DialogTrigger>
 
       {/* MODAL / DIALOG CONTENT */}
-      <DialogContent className="sm:max-w-[600px] bg-white border-[#E7E5DE] text-[#141413] p-0 overflow-hidden font-[family-name:var(--font-geist-sans)] shadow-2xl">
-        <div className="p-6 border-b border-[#E7E5DE] bg-[#FAF9F6] relative overflow-hidden">
+      <DialogContent
+        style={{
+          maxWidth: "580px",
+          background: "#ffffff",
+          border: "1px solid var(--line)",
+          borderRadius: "14px",
+          padding: 0,
+          overflow: "hidden",
+          boxShadow: "0 20px 45px -10px rgba(0, 0, 0, 0.2)",
+        }}
+      >
+        {/* Modal Header Bar with Safe Right Margin for Close Button */}
+        <div
+          style={{
+            padding: "20px 24px",
+            borderBottom: "1px solid var(--line)",
+            background: "#FAF9F6",
+          }}
+        >
           <DialogHeader>
-            <div className="flex items-center justify-between mb-2 relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white border border-[#E7E5DE] flex items-center justify-center text-[#1E4DD8] shadow-sm">
-                  {agentIcons[agent.agent] || <User className="w-5 h-5" />}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingRight: 32 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: "#ffffff",
+                    border: "1px solid var(--line)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+                  }}
+                >
+                  {agentIcons[agent.agent] || <Activity className="w-5 h-5 text-blue-600" />}
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#A3A29B] font-[family-name:var(--font-geist-mono)] mb-0.5">
+                  <div style={{ fontSize: 10.5, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 700, color: "var(--faint)", letterSpacing: "0.08em" }}>
                     Investor Mandate
-                  </p>
-                  <DialogTitle className="text-lg font-bold text-[#141413]">{agent.name}</DialogTitle>
+                  </div>
+                  <DialogTitle style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)", margin: "2px 0 0" }}>
+                    {agent.name}
+                  </DialogTitle>
                 </div>
               </div>
-              <Badge className={cn("font-bold text-xs px-3 py-1 shadow-none", decisionClass)}>
-                <DecisionIcon className="w-3.5 h-3.5 mr-1.5" />
-                {agent.decision}
-              </Badge>
+
+              {/* Status Badge Positioned Safely to Left of Close Button */}
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "5px 12px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontFamily: "var(--mono)",
+                  fontWeight: 700,
+                  background: decisionBg,
+                  color: decisionColor,
+                  border: `1px solid ${decisionBorder}`,
+                }}
+              >
+                {isBuy ? "▲" : isSell ? "▼" : "◆"} {agent.decision}
+              </div>
             </div>
           </DialogHeader>
         </div>
 
-        <div className="p-6 space-y-5 bg-white">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E7E5DE]">
-              <p className="text-[10px] text-[#A3A29B] uppercase tracking-wider font-semibold mb-1 font-[family-name:var(--font-geist-mono)]">
-                Conviction Score
-              </p>
-              <div className="flex items-end gap-2">
-                <span className="text-2xl font-bold font-[family-name:var(--font-geist-mono)] text-[#141413] tabular-nums">
-                  {agent.confidence}%
-                </span>
-                <span className="text-xs text-[#0E7E48] font-semibold mb-1 font-[family-name:var(--font-geist-mono)]">HIGH</span>
+        {/* Modal Body Content */}
+        <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "#FAF9F6", border: "1px solid var(--line)" }}>
+              <div style={{ fontSize: 10.5, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 600, color: "var(--faint)", letterSpacing: "0.05em" }}>
+                Conviction Rating
+              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--ink)", marginTop: 4 }}>
+                {agent.confidence}%
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E7E5DE] flex flex-col justify-center">
-              <p className="text-[10px] text-[#A3A29B] uppercase tracking-wider font-semibold mb-1.5 flex items-center gap-1.5 font-[family-name:var(--font-geist-mono)]">
-                <Terminal className="w-3 h-3 text-[#1E4DD8]" /> Execution Node
-              </p>
-              <p className="font-[family-name:var(--font-geist-mono)] text-xs font-semibold text-[#1E4DD8] bg-[#1E4DD8]/10 px-2 py-1 rounded inline-block self-start border border-[#1E4DD8]/20">
-                chatie_node_{agent.agent}_v2
-              </p>
+
+            <div style={{ padding: "14px 16px", borderRadius: 10, background: "#FAF9F6", border: "1px solid var(--line)" }}>
+              <div style={{ fontSize: 10.5, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 600, color: "var(--faint)", letterSpacing: "0.05em" }}>
+                Agent Archetype
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink)", marginTop: 6, textTransform: "capitalize" }}>
+                {agent.agent} Model
+              </div>
             </div>
           </div>
 
           <div>
-            <p className="text-[10px] text-[#6F6E69] font-semibold uppercase tracking-widest mb-2 font-[family-name:var(--font-geist-mono)] flex items-center gap-1.5">
-              <Terminal className="w-3 h-3 text-[#1E4DD8]" /> Model Reasoning Output
-            </p>
-            <div className="p-4 rounded-xl bg-[#FAF9F6] border border-[#E7E5DE] font-[family-name:var(--font-geist-mono)] text-xs text-[#141413] leading-relaxed h-[180px] overflow-y-auto">
+            <div style={{ fontSize: 11, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 700, color: "var(--faint)", letterSpacing: "0.06em", marginBottom: 8 }}>
+              Thesis &amp; Strategic Outlook
+            </div>
+            <div
+              style={{
+                padding: "16px 18px",
+                borderRadius: 10,
+                background: "#FAF9F6",
+                border: "1px solid var(--line)",
+                fontSize: 13.5,
+                lineHeight: 1.6,
+                color: "var(--ink)",
+              }}
+            >
               {agent.reasoning}
             </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

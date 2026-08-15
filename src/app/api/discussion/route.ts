@@ -33,8 +33,7 @@ export async function POST(req: Request) {
               "X-Title": "AI Hedge Fund",
             },
             body: JSON.stringify({
-              // MENGGUNAKAN MODEL GRATIS agar tidak error jika credit $0
-              model: "google/gemma-2-9b-it", 
+              model: "deepseek/deepseek-chat",
               temperature: 0.7,
               max_tokens: 1000,
               messages: [

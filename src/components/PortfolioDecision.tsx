@@ -1,91 +1,164 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { AnalysisResult } from "@/types"
-import { cn, getRiskColor } from "@/lib/utils"
-import { TrendingUp, TrendingDown, Minus, Share2 } from "lucide-react"
+import React from "react";
+import { AnalysisResult } from "@/types";
+import { Share2, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
 
 interface PortfolioDecisionProps {
-  result: AnalysisResult
+  result: AnalysisResult;
 }
 
 export function PortfolioDecision({ result }: PortfolioDecisionProps) {
-  const { finalDecision, symbol } = result
+  const { finalDecision, symbol } = result;
+  const isBuy = finalDecision.decision === "BUY";
+  const isSell = finalDecision.decision === "SELL";
 
-  const DecisionIcon = finalDecision.decision === "BUY"
-    ? TrendingUp
-    : finalDecision.decision === "SELL"
-    ? TrendingDown
-    : Minus
+  const decisionBg = isBuy
+    ? "rgba(14, 126, 72, 0.08)"
+    : isSell
+    ? "rgba(220, 38, 38, 0.08)"
+    : "rgba(202, 138, 4, 0.08)";
+  const decisionColor = isBuy ? "#0E7E48" : isSell ? "#DC2626" : "#CA8A04";
+  const decisionBorder = isBuy
+    ? "rgba(14, 126, 72, 0.3)"
+    : isSell
+    ? "rgba(220, 38, 38, 0.3)"
+    : "rgba(202, 138, 4, 0.3)";
 
   const handleShare = () => {
     const text = `Chatie Agent Multi-Agent Equity Terminal analyzed $${symbol}:
 
-→ ${finalDecision.decision}
+→ Verdict: ${finalDecision.decision}
 → Conviction: ${finalDecision.confidence}%
 → Risk Profile: ${finalDecision.riskLevel}
 → Consensus: ${finalDecision.summary}
 
-Run your ticker: localhost:3000`
+Run your ticker: http://localhost:3000`;
 
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
-    window.open(url, "_blank", "width=550,height=420")
-  }
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "width=550,height=420");
+  };
 
   return (
-    <Card className="border border-[#E7E5DE] bg-white shadow-sm h-full flex flex-col justify-between font-[family-name:var(--font-geist-sans)]">
+    <div
+      style={{
+        background: "var(--card)",
+        border: "1px solid var(--line)",
+        borderRadius: "14px",
+        padding: "22px 24px",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        height: "100%",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+      }}
+    >
       <div>
-        <CardHeader className="text-center pb-2 border-b border-[#EFEDE6]">
-          <CardTitle className="text-xs font-semibold text-[#A3A29B] uppercase tracking-wider font-[family-name:var(--font-geist-mono)]">
-            Consensus Output
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center pt-6">
-          {/* Main Decision */}
-          <div className={cn(
-            "inline-flex items-center gap-3 px-6 py-3 rounded-xl mb-4 border",
-            finalDecision.decision === "BUY" && "bg-[#0E7E48]/10 text-[#0E7E48] border-[#0E7E48]/25",
-            finalDecision.decision === "SELL" && "bg-[#B42318]/10 text-[#B42318] border-[#B42318]/25",
-            finalDecision.decision === "HOLD" && "bg-[#F1F0EA] text-[#6F6E69] border-[#E7E5DE]"
-          )}>
-            <DecisionIcon className="w-8 h-8" />
-            <span className="text-4xl font-bold font-[family-name:var(--font-geist-mono)]">
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 14, borderBottom: "1px solid var(--line-soft)", marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Sparkles style={{ width: 15, height: 15, color: "var(--cobalt)" }} />
+            <span style={{ fontSize: 11, fontFamily: "var(--mono)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.08em", color: "var(--muted)" }}>
+              Consensus Output
+            </span>
+          </div>
+          <span style={{ fontSize: 11, fontFamily: "var(--mono)", color: "var(--faint)" }}>
+            4 Models Synced
+          </span>
+        </div>
+
+        {/* Big Decision Banner */}
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "12px 32px",
+              borderRadius: "12px",
+              background: decisionBg,
+              border: `1.5px solid ${decisionBorder}`,
+              color: decisionColor,
+            }}
+          >
+            {isBuy ? (
+              <CheckCircle2 style={{ width: 26, height: 26 }} />
+            ) : isSell ? (
+              <AlertTriangle style={{ width: 26, height: 26 }} />
+            ) : (
+              <Sparkles style={{ width: 26, height: 26 }} />
+            )}
+            <span style={{ fontSize: 32, fontWeight: 800, fontFamily: "var(--mono)", letterSpacing: "0.02em" }}>
               {finalDecision.decision}
             </span>
           </div>
+        </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E7E5DE]">
-              <p className="text-[10px] text-[#A3A29B] uppercase font-semibold font-[family-name:var(--font-geist-mono)]">Conviction</p>
-              <p className="text-xl font-bold font-[family-name:var(--font-geist-mono)] text-[#141413] tabular-nums">{finalDecision.confidence}%</p>
+        {/* 2-Column Metric Breakdown */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+          <div style={{ padding: "12px 14px", borderRadius: 8, background: "#FAF9F6", border: "1px solid var(--line)", textAlign: "center" }}>
+            <div style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 600, color: "var(--faint)", fontFamily: "var(--mono)", letterSpacing: "0.05em" }}>
+              Conviction
             </div>
-            <div className="p-3 rounded-lg bg-[#FAF9F6] border border-[#E7E5DE]">
-              <p className="text-[10px] text-[#A3A29B] uppercase font-semibold font-[family-name:var(--font-geist-mono)]">Risk Profile</p>
-              <Badge className={cn("mt-1 shadow-none text-xs font-semibold font-[family-name:var(--font-geist-mono)]", getRiskColor(finalDecision.riskLevel))}>
-                {finalDecision.riskLevel}
-              </Badge>
+            <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "var(--mono)", color: "var(--ink)", marginTop: 4 }}>
+              {finalDecision.confidence}%
             </div>
           </div>
 
-          {/* Summary */}
-          <p className="text-xs text-[#6F6E69] mb-4 leading-relaxed text-left">
-            {finalDecision.summary}
-          </p>
-        </CardContent>
+          <div style={{ padding: "12px 14px", borderRadius: 8, background: "#FAF9F6", border: "1px solid var(--line)", textAlign: "center" }}>
+            <div style={{ fontSize: 10, textTransform: "uppercase", fontWeight: 600, color: "var(--faint)", fontFamily: "var(--mono)", letterSpacing: "0.05em" }}>
+              Risk Profile
+            </div>
+            <div
+              style={{
+                display: "inline-block",
+                marginTop: 6,
+                padding: "2px 8px",
+                borderRadius: 4,
+                fontSize: 12,
+                fontFamily: "var(--mono)",
+                fontWeight: 700,
+                background: finalDecision.riskLevel === "High" ? "rgba(220,38,38,0.1)" : "rgba(14,126,72,0.1)",
+                color: finalDecision.riskLevel === "High" ? "#DC2626" : "#0E7E48",
+                border: `1px solid ${finalDecision.riskLevel === "High" ? "rgba(220,38,38,0.25)" : "rgba(14,126,72,0.25)"}`,
+              }}
+            >
+              {finalDecision.riskLevel}
+            </div>
+          </div>
+        </div>
+
+        {/* Narrative Summary */}
+        <div style={{ padding: "12px 14px", borderRadius: 8, background: "var(--panel)", borderLeft: "3px solid var(--cobalt)", fontSize: 12.5, lineHeight: 1.55, color: "var(--ink)", marginBottom: 18 }}>
+          {finalDecision.summary}
+        </div>
       </div>
 
-      <div className="p-6 pt-0">
-        <Button
-          onClick={handleShare}
-          className="w-full gap-2 bg-[#141413] hover:bg-[#1E4DD8] text-white text-xs font-medium cursor-pointer transition-colors shadow-sm"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          Share to X
-        </Button>
-      </div>
-    </Card>
-  )
+      {/* Share Button */}
+      <button
+        onClick={handleShare}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          background: "#141413",
+          color: "#ffffff",
+          padding: "10px 16px",
+          borderRadius: "8px",
+          border: "none",
+          fontSize: "12.5px",
+          fontWeight: 600,
+          fontFamily: "var(--font)",
+          cursor: "pointer",
+          transition: "background 0.15s ease",
+        }}
+        className="hover:bg-[#2563EB]"
+      >
+        <Share2 style={{ width: 14, height: 14 }} />
+        Share to X
+      </button>
+    </div>
+  );
 }
