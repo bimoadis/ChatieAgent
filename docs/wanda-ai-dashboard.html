@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wanda AI | Core System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF9F6;
+    --panel:#F1F0EA;
+    --card:#FFFFFF;
+    --line:#E7E5DE;
+    --line-soft:#EFEDE6;
+    --ink:#141413;
+    --muted:#6F6E69;
+    --faint:#A3A29B;
+    --cobalt:#1E4DD8;
+    --cobalt-soft:rgba(30,77,216,.10);
+    --up:#0E7E48;
+    --down:#B42318;
+    --sans:"Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --r:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    font-family:var(--sans);
+    background:var(--paper);
+    color:var(--ink);
+    display:flex;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  :focus-visible{outline:2px solid var(--cobalt);outline-offset:2px;border-radius:2px;}
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar{
+    width:250px;flex-shrink:0;
+    background:var(--paper);
+    border-right:1px solid var(--line);
+    display:flex;flex-direction:column;justify-content:space-between;
+    position:sticky;top:0;height:100vh;
+  }
+  .brand{
+    display:flex;align-items:center;gap:9px;
+    padding:20px 20px 18px 20px;
+    border-bottom:1px solid var(--line);
+  }
+  .mark{width:22px;height:22px;flex:none;color:var(--cobalt);}
+  .brand-text .name{font-weight:600;font-size:15px;letter-spacing:-.02em;line-height:1.2;}
+  .brand-text .sub{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint);font-weight:500;text-transform:uppercase;}
+
+  .nav{padding:14px 12px;display:flex;flex-direction:column;gap:2px;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;
+    padding:9px 12px;border-radius:8px;
+    font-size:14px;font-weight:500;color:var(--muted);
+    cursor:pointer;border:1px solid transparent;background:none;width:100%;text-align:left;
+    transition:background .2s, color .2s;
+  }
+  .nav-item svg{width:16px;height:16px;flex-shrink:0;color:var(--faint);}
+  .nav-item:hover{background:var(--panel);color:var(--ink);}
+  .nav-item.active{background:var(--card);border-color:var(--line);color:var(--ink);}
+  .nav-item.active svg{color:var(--cobalt);}
+
+  .sidebar-bottom{padding:16px 18px 20px 18px;border-top:1px solid var(--line);}
+  .model-label{
+    display:flex;align-items:center;gap:6px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;
+    color:var(--faint);font-weight:500;margin-bottom:8px;text-transform:uppercase;
+  }
+  .model-select{
+    width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:8px;
+    font-size:13px;font-weight:500;color:var(--ink);background:var(--card);
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+  }
+  .node-active{
+    display:flex;align-items:center;gap:8px;margin-top:14px;
+    font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.03em;
+  }
+  .pulse{width:6px;height:6px;border-radius:50%;background:var(--up);position:relative;flex:none;}
+  .pulse::after{
+    content:"";position:absolute;inset:0;border-radius:50%;background:var(--up);
+    animation:pulseRing 2s ease-out infinite;
+  }
+  @keyframes pulseRing{0%{transform:scale(1);opacity:.6;}100%{transform:scale(3.2);opacity:0;}}
+
+  /* ---------- MAIN ---------- */
+  .main{flex:1;padding:30px 40px 48px 40px;max-width:1440px;}
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    padding:24px;
+  }
+
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--faint);
+  }
+
+  /* System Overview */
+  .hero{padding:36px;position:relative;overflow:hidden;margin-bottom:22px;background:var(--panel);}
+  .status-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;
+    color:var(--up);background:rgba(14,126,72,.08);border:1px solid rgba(14,126,72,.25);
+    padding:5px 11px;border-radius:6px;margin-bottom:18px;
+  }
+  .hero h1{font-size:32px;margin:0 0 12px 0;font-weight:600;letter-spacing:-.03em;}
+  .hero h1 span{color:var(--cobalt);}
+  .hero p{font-size:15px;color:var(--muted);max-width:620px;line-height:1.6;margin:0;}
+
+  .ticker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+  .ticker-card{padding:18px;}
+  .ticker-sym{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--muted);margin-bottom:10px;letter-spacing:.02em;}
+  .ticker-row{display:flex;align-items:flex-end;justify-content:space-between;}
+  .ticker-price{font-size:20px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .ticker-change{font-family:var(--mono);font-size:12px;color:var(--up);font-weight:500;margin-top:6px;}
+  .sparkline{width:76px;height:30px;}
+
+  .split{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;align-items:start;}
+  .panel-title{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-bottom:18px;letter-spacing:-.01em;}
+  .panel-title svg{width:16px;height:16px;color:var(--cobalt);}
+
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;padding-top:6px;}
+  .gauge-val{font-size:32px;font-weight:600;color:var(--ink);margin-top:10px;font-variant-numeric:tabular-nums;}
+  .gauge-label{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.1em;color:var(--up);text-transform:uppercase;}
+  .gauge-sub{font-size:12.5px;color:var(--faint);margin-top:4px;}
+
+  .news-list{max-height:280px;overflow-y:auto;padding-right:4px;}
+  .news-item{padding:12px 0;border-bottom:1px solid var(--line);}
+  .news-item:last-child{border-bottom:none;}
+  .news-src{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.06em;color:var(--cobalt);margin-bottom:4px;text-transform:uppercase;}
+  .news-headline{font-size:13.5px;line-height:1.45;color:var(--ink);}
+
+  /* Wanda Core */
+  .cli-bar{
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--faint);
+    margin-bottom:14px;text-transform:uppercase;
+  }
+  .cli-bar svg{width:14px;height:14px;color:var(--cobalt);}
+  .cli-row{display:flex;gap:12px;margin-bottom:24px;}
+  .cli-input{
+    flex:1;padding:14px 16px;border:1px solid var(--line);border-radius:10px;
+    font-family:var(--mono);font-size:13px;color:var(--faint);background:var(--panel);
+    display:flex;align-items:center;gap:8px;
+  }
+  .cli-input .dollar{color:var(--cobalt);font-weight:600;}
+  .exec-btn{
+    display:flex;align-items:center;gap:8px;
+    padding:0 20px;border:1px solid var(--ink);border-radius:10px;
+    background:var(--ink);color:#fff;font-weight:500;font-size:14px;cursor:pointer;
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  }
+  .exec-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px -6px rgba(20,20,19,.4);}
+  .exec-btn svg{width:14px;height:14px;color:var(--cobalt);}
+  .awaiting{
+    border:1px dashed var(--line);border-radius:var(--r);background:var(--panel);
+    padding:90px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  }
+  .awaiting-icon{
+    width:52px;height:52px;border-radius:12px;background:var(--card);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;margin-bottom:22px;
+  }
+  .awaiting-icon svg{width:22px;height:22px;color:var(--faint);}
+  .awaiting h3{font-size:17px;margin:0 0 8px 0;font-weight:600;letter-spacing:-.01em;}
+  .awaiting p{font-size:13.5px;color:var(--muted);max-width:420px;line-height:1.55;margin:0;}
+
+  /* War Room */
+  .wr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+  .wr-title{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:600;letter-spacing:-.02em;}
+  .wr-title svg{width:20px;height:20px;color:var(--cobalt);}
+  .wr-title span{color:var(--cobalt);}
+  .wr-sub{font-size:13.5px;color:var(--muted);margin:6px 0 0 30px;}
+  .seats-pill{
+    font-family:var(--mono);font-weight:500;font-size:11px;color:var(--cobalt);
+    background:var(--cobalt-soft);border:1px solid rgba(30,77,216,.2);padding:6px 12px;border-radius:6px;
+  }
+  .wr-grid{display:grid;grid-template-columns:290px 1fr;gap:16px;align-items:start;}
+  .member-list{padding:0;overflow:hidden;}
+  .member-list-head{
+    display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:500;
+    letter-spacing:.08em;color:var(--faint);padding:15px 18px;border-bottom:1px solid var(--line);text-transform:uppercase;
+  }
+  .member-list-head svg{width:13px;height:13px;color:var(--cobalt);}
+  .member{
+    padding:12px 18px;border-bottom:1px solid var(--line);
+    border-left:2px solid transparent;
+    display:flex;align-items:center;justify-content:space-between;cursor:pointer;
+    transition:background .2s;
+  }
+  .member:last-child{border-bottom:none;}
+  .member:hover{background:var(--panel);}
+  .member.active-a{border-left-color:#6D28D9;background:#FAF8FF;}
+  .member.active-b{border-left-color:var(--down);background:#FEF7F6;}
+  .member-name{font-weight:600;font-size:13.5px;letter-spacing:-.01em;}
+  .member.active-a .member-name{color:#6D28D9;}
+  .member.active-b .member-name{color:var(--down);}
+  .member-role{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em;margin-top:2px;text-transform:uppercase;}
+  .member-dot{width:6px;height:6px;border-radius:50%;background:var(--line);}
+  .member.active-a .member-dot{background:#6D28D9;}
+  .member.active-b .member-dot{background:var(--down);}
+
+  .transcript-card{padding:0;display:flex;flex-direction:column;height:100%;}
+  .transcript-head{
+    display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10.5px;font-weight:500;
+    letter-spacing:.08em;color:var(--faint);padding:15px 18px;border-bottom:1px solid var(--line);text-transform:uppercase;
+  }
+  .transcript-head svg{width:13px;height:13px;color:var(--cobalt);}
+  .transcript-body{
+    flex:1;min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;color:var(--faint);padding:30px;background:var(--panel);
+  }
+  .transcript-body svg{width:26px;height:26px;color:var(--cobalt);opacity:.6;margin-bottom:14px;}
+  .transcript-body .idle{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+  .transcript-body p{font-size:13px;max-width:340px;line-height:1.5;margin:0;}
+  .transcript-foot{display:flex;gap:10px;padding:15px 18px;border-top:1px solid var(--line);}
+  .transcript-input{
+    flex:1;padding:12px 15px;border:1px solid var(--line);border-radius:9px;
+    font-family:var(--mono);font-size:12.5px;color:var(--faint);
+  }
+  .send-btn{
+    display:flex;align-items:center;gap:7px;padding:0 18px;border:1px solid var(--ink);border-radius:9px;
+    background:var(--ink);color:#fff;font-weight:500;font-size:12px;letter-spacing:.04em;cursor:pointer;
+    font-family:var(--mono);text-transform:uppercase;
+  }
+  .send-btn svg{width:12px;height:12px;color:var(--cobalt);}
+
+  /* Data Logs */
+  .dl-title{font-size:23px;font-weight:600;margin:0 0 20px 0;letter-spacing:-.02em;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-family:var(--mono);font-weight:500;color:var(--faint);font-size:10.5px;
+    letter-spacing:.06em;text-transform:uppercase;
+    padding:0 14px 14px 14px;border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:14px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--panel);}
+  .co-cell{display:flex;align-items:center;gap:10px;font-weight:600;font-family:var(--mono);font-size:13px;}
+  .co-logo{
+    width:22px;height:22px;border-radius:6px;background:var(--panel);
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;
+    flex-shrink:0;overflow:hidden;color:var(--muted);
+  }
+  .num{font-family:var(--mono);font-variant-numeric:tabular-nums;}
+  .pos{color:var(--up);}
+  .neg{color:var(--down);}
+  .checkbox{width:14px;height:14px;border:1.5px solid var(--line);border-radius:4px;display:inline-block;}
+  .pagination{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:22px;flex-wrap:wrap;}
+  .pg-btn{
+    padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);
+    font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);
+  }
+  .pg-btn:hover{border-color:var(--ink);color:var(--ink);}
+  .pg-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  /* Configuration */
+  .cfg-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px;}
+  .cfg-icon{
+    width:42px;height:42px;border-radius:10px;background:var(--ink);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .cfg-icon svg{width:20px;height:20px;color:#fff;}
+  .cfg-head h2{font-size:19px;margin:0 0 4px 0;font-weight:600;letter-spacing:-.02em;}
+  .cfg-head p{font-size:13.5px;color:var(--muted);margin:0;}
+  .cfg-label{display:flex;align-items:center;justify-content:space-between;margin:26px 0 10px 0;}
+  .cfg-label-l{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;letter-spacing:-.01em;}
+  .cfg-label-l svg{width:14px;height:14px;color:var(--cobalt);}
+  .auth-pill{
+    font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.06em;
+    color:var(--cobalt);background:var(--cobalt-soft);padding:5px 10px;border-radius:6px;text-transform:uppercase;
+  }
+  .key-input{
+    width:100%;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:var(--panel);
+    font-family:var(--mono);font-size:13px;color:var(--faint);
+  }
+  .doc-box{
+    background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-top:16px;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .doc-box svg{width:14px;height:14px;color:var(--cobalt);margin-top:2px;flex-shrink:0;}
+  .doc-box strong{display:block;font-size:13.5px;margin-bottom:3px;font-weight:600;}
+  .doc-box p{font-size:13px;color:var(--muted);margin:0;line-height:1.5;}
+  .doc-box a{color:var(--cobalt);font-weight:500;text-decoration:underline;}
+  .update-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px;margin-top:16px;border:1px solid var(--line);border-radius:9px;
+    background:var(--line-soft);color:var(--faint);font-weight:500;font-size:14px;cursor:pointer;
+  }
+  .update-btn svg{width:14px;height:14px;}
+  .divider{border:none;border-top:1px solid var(--line);margin:30px 0 24px 0;}
+  .sys-id-title{font-family:var(--mono);font-size:10.5px;font-weight:500;letter-spacing:.08em;color:var(--faint);margin-bottom:12px;text-transform:uppercase;}
+  .sys-id-box{border:1px solid var(--line);border-radius:10px;padding:18px 20px;font-size:13.5px;line-height:1.65;color:var(--muted);background:var(--panel);}
+  .sys-id-box strong{color:var(--ink);}
+  .sys-id-box p{margin:0 0 12px 0;}
+  .sys-id-box p:last-child{margin-bottom:0;}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <div class="brand-text">
+        <div class="name">Wanda AI</div>
+        <div class="sub">Core System</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="nav-item active" data-view="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        System Overview
+      </button>
+      <button class="nav-item" data-view="core">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        Wanda Core
+      </button>
+      <button class="nav-item" data-view="council">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2"/><circle cx="19" cy="8" r="3"/><path d="M17 14a4 4 0 0 1 4 4v3"/></svg>
+        Council Discussion
+      </button>
+      <button class="nav-item" data-view="logs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+        Data Logs
+      </button>
+      <button class="nav-item" data-view="config">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg>
+        Configuration
+      </button>
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="model-label">
+      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/></svg>
+      Processing Model
+    </div>
+    <div class="model-select">
+      Balanced (Standard)
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="node-active"><span class="pulse"></span> Node Active</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ===================== SYSTEM OVERVIEW ===================== -->
+  <div class="view active" id="view-overview">
+    <div class="card hero">
+      <div class="status-pill">Status: Online</div>
+      <h1>Wanda <span>Core Terminal</span></h1>
+      <p>Institutional-grade quantitative analysis. Deploying multi-agent neural swarms to parse global market datasets in real-time.</p>
+    </div>
+
+    <div class="ticker-grid" id="ticker-grid"></div>
+
+    <div class="split">
+      <div class="card">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4.9 19.1A9 9 0 1 1 19.1 4.9"/></svg>
+          Fear &amp; Greed Index
+        </div>
+        <div class="gauge-wrap">
+          <svg width="180" height="100" viewBox="0 0 180 100">
+            <path d="M10,95 A80,80 0 0,1 170,95" fill="none" stroke="#EFEDE6" stroke-width="13"/>
+            <path d="M10,95 A80,80 0 0,1 170,95" fill="none" stroke="url(#g1)" stroke-width="13" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#B42318"/>
+                <stop offset="50%" stop-color="#B58900"/>
+                <stop offset="100%" stop-color="#0E7E48"/>
+              </linearGradient>
+            </defs>
+            <line x1="90" y1="95" x2="128" y2="42" stroke="#141413" stroke-width="2.5" stroke-linecap="round" transform="rotate(6 90 95)"/>
+            <circle cx="90" cy="95" r="4.5" fill="#141413"/>
+          </svg>
+          <div class="gauge-val">62</div>
+          <div class="gauge-label">Greed</div>
+          <div class="gauge-sub">Market Sentiment Indicator</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h13l3 3v13H4z"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+          Recent Market News
+        </div>
+        <div class="news-list" id="news-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== WANDA CORE ===================== -->
+  <div class="view" id="view-core">
+    <div class="card" style="margin-bottom:22px;">
+      <div class="cli-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><polyline points="8 9 11 12 8 15"/><line x1="13" y1="15" x2="16" y2="15"/></svg>
+        Command Line Interface
+      </div>
+      <div class="cli-row">
+        <div class="cli-input"><span class="dollar">$</span> enter target ticker (e.g., aapl, tsla, nvda)</div>
+        <button class="exec-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg>
+          Execute Analysis
+        </button>
+      </div>
+    </div>
+    <div class="awaiting">
+      <div class="awaiting-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <h3>Awaiting Target Parameters</h3>
+      <p>Input a valid equity ticker in the terminal above to initiate the data extraction and neural analysis protocol.</p>
+    </div>
+  </div>
+
+  <!-- ===================== COUNCIL DISCUSSION / WAR ROOM ===================== -->
+  <div class="view" id="view-council">
+    <div class="wr-head">
+      <div>
+        <div class="wr-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><line x1="6" y1="8.5" x2="12" y2="15.5"/><line x1="18" y1="8.5" x2="12" y2="15.5"/></svg>
+          War <span>Room</span>
+        </div>
+        <div class="wr-sub">Simulate a high-stakes investment committee meeting with quantitative focus.</div>
+      </div>
+      <div class="seats-pill">Active Seats: 3</div>
+    </div>
+
+    <div class="wr-grid">
+      <div class="card member-list">
+        <div class="member-list-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9"/></svg>
+          Committee Members
+        </div>
+        <div id="member-list-items"></div>
+      </div>
+
+      <div class="card transcript-card">
+        <div class="transcript-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><polyline points="8 9 11 12 8 15"/></svg>
+          Live Transcript
+        </div>
+        <div class="transcript-body">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5z"/><path d="M19 15l.7 2.1 2.1.7-2.1.7L19 20.6l-.7-2.1-2.1-.7 2.1-.7z"/></svg>
+          <div class="idle">Committee_Idle</div>
+          <p>Present a thesis or asset to the selected committee members to begin the debate.</p>
+        </div>
+        <div class="transcript-foot">
+          <div class="transcript-input">Present thesis to the room (e.g. 'What is the downside risk of AAPL at 30x PE?')...</div>
+          <button class="send-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+            Execute
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DATA LOGS ===================== -->
+  <div class="view" id="view-logs">
+    <h2 class="dl-title">Data Logs</h2>
+    <div class="card" style="padding:0;">
+      <table>
+        <thead>
+          <tr>
+            <th></th><th>#</th><th>Company</th><th>Name</th><th>Exchange</th><th>Sector</th><th>Industry</th><th>Market Cap</th><th>P/E Ratio</th><th>PEG Ratio</th>
+          </tr>
+        </thead>
+        <tbody id="logs-body"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- ===================== CONFIGURATION ===================== -->
+  <div class="view" id="view-config">
+    <div class="card">
+      <div class="cfg-head">
+        <div class="cfg-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.6V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg>
+        </div>
+        <div>
+          <h2>System Configuration</h2>
+          <p>Adjust Wanda AI neural parameters and core API access.</p>
+        </div>
+      </div>
+
+      <div class="cfg-label">
+        <div class="cfg-label-l">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 7a4 4 0 1 1-4 4"/><path d="M11 11L2 20v2h2l9-9"/></svg>
+          OpenRouter API Access Key
+        </div>
+        <div class="auth-pill">Authentication Required</div>
+      </div>
+      <div class="key-input">sk-or-v1-...</div>
+
+      <div class="doc-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <div>
+          <strong>API Documentation</strong>
+          <p>The system requires a valid OpenRouter token to initialize the agentic swarm. Obtain your credentials at <a href="#">openrouter.ai/keys</a></p>
+        </div>
+      </div>
+
+      <button class="update-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Update API Parameters
+      </button>
+
+      <hr class="divider">
+      <div class="sys-id-title">System Identity</div>
+      <div class="sys-id-box">
+        <p><strong>Wanda AI Core Terminal</strong> bridges the gap between institutional-grade quantitative data and clean, actionable intelligence.</p>
+        <p>Powered by multi-agent neural swarms, Wanda simultaneously evaluates intrinsic valuation, growth trajectory, live quantitative indicators, and raw global sentiment to execute precision analysis.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---------- NAV ----------
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(item=>{
+    item.addEventListener('click', ()=>{
+      navItems.forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.getElementById('view-'+item.dataset.view).classList.add('active');
+    });
+  });
+
+  // ---------- SPARKLINE GENERATOR ----------
+  function sparkline(points, color){
+    const w=76,h=30;
+    const max=Math.max(...points), min=Math.min(...points);
+    const norm = points.map((p,i)=> {
+      const x = (i/(points.length-1))*w;
+      const y = h - ((p-min)/(max-min||1))*h;
+      return `${x},${y}`;
+    }).join(' ');
+    return `<svg class="sparkline" viewBox="0 0 ${w} ${h}"><polyline points="${norm}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+  function randomWalk(n, vol){
+    let v=50, arr=[v];
+    for(let i=1;i<n;i++){ v += (Math.random()-0.45)*vol; arr.push(v); }
+    return arr;
+  }
+
+  // ---------- TICKERS ----------
+  const tickers = [
+    {sym:'SPY', price:'$776.34', chg:'4.73%'},
+    {sym:'QQQ', price:'$731.07', chg:'2.51%'},
+    {sym:'AAPL', price:'$305.93', chg:'1.22%'},
+    {sym:'NVDA', price:'$225.16', chg:'0.76%'},
+  ];
+  document.getElementById('ticker-grid').innerHTML = tickers.map(t=>`
+    <div class="card ticker-card">
+      <div class="ticker-sym">${t.sym}</div>
+      <div class="ticker-row">
+        <div>
+          <div class="ticker-price">${t.price}</div>
+          <div class="ticker-change">↗ ${t.chg}</div>
+        </div>
+        ${sparkline(randomWalk(14,10), '#0E7E48')}
+      </div>
+    </div>
+  `).join('');
+
+  // ---------- NEWS ----------
+  const news = [
+    {src:'Gurufocus.com', text:"Ray Dalio's Top Q2 2026 Move: State Street SPDR S&P 500 ETF Trust at a 2.93% Portfolio Impact"},
+    {src:'Gurufocus.com', text:"Joel Greenblatt's Top Q2 2026 Move: State Street SPDR S&P 500 ETF Trust at a 4. ..."},
+    {src:'24/7 Wall St.', text:"Cash Pays 3.8% and the Fed May Hike. This T-Bill Fund Pays the Same but Sends No Tax Bill Until You Sell"},
+    {src:'24/7 Wall St.', text:"Dividend Aristocrats Screening for Yield and Growth Heading Into Autumn 2026"},
+  ];
+  document.getElementById('news-list').innerHTML = news.map(n=>`
+    <div class="news-item">
+      <div class="news-src">${n.src}</div>
+      <div class="news-headline">${n.text}</div>
+    </div>
+  `).join('');
+
+  // ---------- COUNCIL MEMBERS ----------
+  const members = [
+    {name:'Aswath Damodaran', role:'Valuation Dean'},
+    {name:'Ben Graham', role:'Value Godfather'},
+    {name:'Bill Ackman', role:'Activist'},
+    {name:'Cathie Wood', role:'Growth/Disruption', state:'active-a'},
+    {name:'Charlie Munger', role:'Quality at Fair Price'},
+    {name:'Michael Burry', role:'Deep Value/Contrarian', state:'active-b'},
+    {name:'Mohnish Pabrai', role:'Dhandho Investor'},
+    {name:'Nassim Taleb', role:'Tail Risk/Antifragile'},
+    {name:'Peter Lynch', role:'Ten-Bagger Hunter'},
+  ];
+  document.getElementById('member-list-items').innerHTML = members.map(m=>`
+    <div class="member ${m.state||''}">
+      <div>
+        <div class="member-name">${m.name}</div>
+        <div class="member-role">${m.role}</div>
+      </div>
+      <div class="member-dot"></div>
+    </div>
+  `).join('');
+
+  // ---------- DATA LOGS ----------
+  const logos = {NVDA:'🟩',GOOGL:'🔵',AAPL:'⬛',MSFT:'🟦',AMZN:'🟧',AVGO:'🔴',META:'🔷',TSLA:'⬜','BRK-A':'🏛️',WMT:'🟡'};
+  const rows = [
+    ['NVDA','NVIDIA','NASDAQ','Technology','Semiconductors & Se...','$4.46T','37.4x','0.55'],
+    ['GOOGL','Alphabet A','NASDAQ','Technology','Software & IT Services','$3.85T','29.6x','0.79'],
+    ['AAPL','Apple','NASDAQ','Technology','Computers, Phones & ...','$3.82T','33.0x','1.23'],
+    ['MSFT','Microsoft','NASDAQ','Technology','Software & IT Services','$2.77T','23.2x','0.82'],
+    ['AMZN','Amazon.com','NASDAQ','Consumer Cyclicals','Diversified Retail','$2.51T','32.4x','0.98'],
+    ['AVGO','Broadcom','NASDAQ','Technology','Semiconductors & Se...','$1.67T','69.0x','0.42'],
+    ['META','Meta Platforms','NASDAQ','Technology','Software & IT Services','$1.59T','26.8x','-15.51'],
+    ['TSLA','Tesla','NASDAQ','Consumer Cyclicals','Automobiles & Auto P...','$1.30T','320.2x','-7.57'],
+    ['BRK-A','Berkshire Hathaway A','NYSE','Consumer Non-Cyclic...','Consumer Goods Con...','$1.05T','15.7x','-0.62'],
+    ['WMT','Walmart','NASDAQ','Consumer Non-Cyclic...','Food & Drug Retailing','$1.03T','47.3x','3.45'],
+  ];
+  document.getElementById('logs-body').innerHTML = rows.map((r,i)=>{
+    const pe = parseFloat(r[6]); const peg = parseFloat(r[7]);
+    const peClass = pe>60?'neg':'';
+    const pegClass = peg<0?'neg':(peg<1?'pos':'');
+    return `
+    <tr>
+      <td><span class="checkbox"></span></td>
+      <td class="num">${i+1}</td>
+      <td><div class="co-cell"><span class="co-logo">${logos[r[0]]||''}</span>${r[0]}</div></td>
+      <td>${r[1]}</td>
+      <td>${r[2]}</td>
+      <td>${r[3]}</td>
+      <td>${r[4]}</td>
+      <td class="num"><strong>${r[5]}</strong></td>
+      <td class="num ${peClass}">${r[6]}</td>
+      <td class="num ${pegClass}">${r[7]}</td>
+    </tr>`;
+  }).join('');
+
+  const pag = document.getElementById('pagination');
+  let html = `<button class="pg-btn">‹ Previous</button>`;
+  for(let i=1;i<=10;i++) html += `<button class="pg-btn ${i===1?'active':''}">${i}</button>`;
+  html += `<button class="pg-btn">Next ›</button>`;
+  pag.innerHTML = html;
+</script>
+
+</body>
+</html>
