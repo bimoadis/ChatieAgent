@@ -29,33 +29,25 @@ export function Settings({ apiKey, onApiKeyChange }: SettingsProps) {
         </div>
         <div>
           <h2>System Configuration</h2>
-          <p>Adjust Wanda AI neural parameters and core API access.</p>
+          <p>Adjust Chatie Agent neural parameters and core API access.</p>
         </div>
       </div>
 
-      <div className="dash-cfg-label">
-        <div className="dash-cfg-label-l">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M15 7a4 4 0 1 1-4 4"/>
-            <path d="M11 11L2 20v2h2l9-9"/>
-          </svg>
-          OpenRouter API Access Key
-        </div>
-        <div className="dash-auth-pill">Authentication Required</div>
-      </div>
+      <div className="dash-cfg-label">OpenRouter API Key</div>
 
       <input
         type="password"
         className="dash-key-input"
-        placeholder="sk-or-v1-..."
+        placeholder="sk-or-v1-xxxxxxxxxxxxxxxx"
         value={tempKey}
         onChange={(e) => setTempKey(e.target.value)}
       />
 
       <div className="dash-doc-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-          <polyline points="4 17 10 11 4 5"/>
-          <line x1="12" y1="19" x2="20" y2="19"/>
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         <div>
           <strong>API Documentation</strong>
@@ -94,8 +86,8 @@ export function Settings({ apiKey, onApiKeyChange }: SettingsProps) {
 
       <div className="dash-sys-id-title">System Identity</div>
       <div className="dash-sys-id-box">
-        <p><strong>Wanda AI Core Terminal</strong> bridges the gap between institutional-grade quantitative data and clean, actionable intelligence.</p>
-        <p>Powered by multi-agent neural swarms, Wanda simultaneously evaluates intrinsic valuation, growth trajectory, live quantitative indicators, and raw global sentiment to execute precision analysis.</p>
+        <p><strong>Chatie Agent Core Terminal</strong> bridges the gap between institutional-grade quantitative data and clean, actionable intelligence.</p>
+        <p>Powered by multi-agent neural swarms, Chatie Agent simultaneously evaluates intrinsic valuation, growth trajectory, live quantitative indicators, and raw global sentiment to execute precision analysis.</p>
       </div>
     </div>
   )

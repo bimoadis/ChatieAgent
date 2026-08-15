@@ -50,7 +50,7 @@ export default function DashboardPage() {
   // Efek Booting Screen
   useEffect(() => {
     const sequence = [
-      "WANDA_AI [Core System v2.0]",
+      "CHATIE_AGENT [Core System v2.0]",
       "Establishing quantitative telemetry feeds: OK",
       "Loading 19 multi-agent reasoning engines...",
       "Authenticating workspace credentials...",
@@ -103,9 +103,9 @@ export default function DashboardPage() {
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", background: "var(--paper)", fontFamily: "var(--mono)", padding: 20 }}>
         <div style={{ width: "100%", maxWidth: 480, padding: 28, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, boxShadow: "0 4px 20px -8px rgba(20,20,19,.1)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, paddingBottom: 14, borderBottom: "1px solid var(--line)" }}>
-            <img src="/logo.png" alt="Wanda AI" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
+            <img src="/logo.png" alt="Chatie Agent" style={{ width: 22, height: 22, objectFit: "contain", borderRadius: 4 }} />
             <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: "var(--ink)", letterSpacing: "-.02em" }}>Wanda AI</div>
+              <div style={{ fontWeight: 600, fontSize: 14, color: "var(--ink)", letterSpacing: "-.02em" }}>Chatie Agent</div>
               <div style={{ fontFamily: "var(--mono)", fontSize: 9.5, letterSpacing: ".1em", color: "var(--faint)", textTransform: "uppercase" }}>Core Terminal</div>
             </div>
           </div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
 
   const viewTitles: Record<string, string> = {
     overview: "System Overview",
-    core: "Wanda Core",
+    core: "Chatie Core",
     council: "Council Discussion",
     logs: "Data Logs",
     config: "Configuration",
@@ -152,7 +152,7 @@ export default function DashboardPage() {
         </button>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.png" alt="Wanda AI" style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 4 }} />
+          <img src="/logo.png" alt="Chatie Agent" style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 4 }} />
           <span style={{ fontWeight: 600, fontSize: 13, color: "var(--ink)" }}>
             {viewTitles[activeView] || "Dashboard"}
           </span>

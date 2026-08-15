@@ -85,7 +85,7 @@ export function DashboardView({ history }: DashboardViewProps) {
       {/* Hero Banner */}
       <div className="dash-hero">
         <div className="dash-status-pill">Status: Online</div>
-        <h1>Wanda <span>Core Terminal</span></h1>
+        <h1>Chatie <span>Core Terminal</span></h1>
         <p>Institutional-grade quantitative analysis. Deploying multi-agent neural swarms to parse global market datasets in real-time.</p>
       </div>
 

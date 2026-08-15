@@ -9,6 +9,12 @@ export interface StockQuote {
   week52High: number;
   week52Low: number;
   volume: number;
+  sector?: string;
+  industry?: string;
+  exchange?: string;
+  trailingPE?: number | null;
+  pegRatio?: number | null;
+  changePercent?: number;
   historicalData: {
     date: string;
     price: number;

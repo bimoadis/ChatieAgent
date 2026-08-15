@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
-interface StockData {
+export interface StockData {
   symbol: string;
   name: string;
   exchange: string;
@@ -16,155 +16,391 @@ interface StockData {
 
 const LOGOS: Record<string, string> = {
   NVDA: '🟩', GOOGL: '🔵', AAPL: '⬛', MSFT: '🟦', AMZN: '🟧',
-  AVGO: '🔴', META: '🔷', TSLA: '⬜', 'BRK-A': '🏛️', WMT: '🟡'
+  AVGO: '🔴', META: '🔷', TSLA: '⬜', 'BRK-A': '🏛️', WMT: '🟡',
+  LLY: '🧪', JPM: '🏦', V: '💳', MA: '💳', XOM: '🛢️',
+  UNH: '🏥', JNJ: '💊', PG: '🧼', HD: '🔨', CVX: '⛽',
+  COST: '🛒', ORCL: '💾', BAC: '🏦', KO: '🥤', PEP: '🥤',
+  ADBE: '🎨', CRM: '☁️', AMD: '⚡', NFLX: '🎬', QCOM: '📶',
+  TMO: '🔬', WFC: '🏦', DIS: '🏰', INTC: '💻', CSCO: '🌐',
+  IBM: '🖥️', UBER: '🚗', TXN: '📟', NOW: '⚡', GE: '⚙️',
+  AMAT: '🔬', CAT: '🚜', BKNG: '✈️', ACN: '💼', PM: '🚬',
+  ISRG: '🤖', PLTR: '👁️', COIN: '🪙', SNOW: '❄️', SHOP: '🛍️',
+  CRWD: '🛡️', PANW: '🔒', ABNB: '🏠', SQ: '💳', SPOT: '🎵'
 };
 
+function CompanyLogo({ symbol }: { symbol: string }) {
+  const [hasError, setHasError] = useState(false);
+  const normalizedSymbol = symbol.replace(/\./g, "-");
+
+  if (hasError) {
+    return (
+      <span className="dash-co-logo">
+        {LOGOS[symbol] || symbol.charAt(0)}
+      </span>
+    );
+  }
+
+  return (
+    <span className="dash-co-logo">
+      <img
+        src={`/logos/${normalizedSymbol}.png`}
+        alt={`${symbol} logo`}
+        loading="lazy"
+        onError={() => setHasError(true)}
+      />
+    </span>
+  );
+}
+
 const INITIAL_STOCKS: StockData[] = [
-  { symbol: "NVDA", name: "NVIDIA", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors & Se...", marketCapValue: 4.46, marketCapUnit: "T", peRatio: 37.4, pegRatio: 0.55 },
-  { symbol: "GOOGL", name: "Alphabet A", exchange: "NASDAQ", sector: "Technology", industry: "Software & IT Services", marketCapValue: 3.85, marketCapUnit: "T", peRatio: 29.6, pegRatio: 0.79 },
-  { symbol: "AAPL", name: "Apple", exchange: "NASDAQ", sector: "Technology", industry: "Computers, Phones & ...", marketCapValue: 3.82, marketCapUnit: "T", peRatio: 33.0, pegRatio: 1.23 },
-  { symbol: "MSFT", name: "Microsoft", exchange: "NASDAQ", sector: "Technology", industry: "Software & IT Services", marketCapValue: 2.77, marketCapUnit: "T", peRatio: 23.2, pegRatio: 0.82 },
-  { symbol: "AMZN", name: "Amazon.com", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "Diversified Retail", marketCapValue: 2.51, marketCapUnit: "T", peRatio: 32.4, pegRatio: 0.98 },
-  { symbol: "AVGO", name: "Broadcom", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors & Se...", marketCapValue: 1.67, marketCapUnit: "T", peRatio: 69.0, pegRatio: 0.42 },
-  { symbol: "META", name: "Meta Platforms", exchange: "NASDAQ", sector: "Technology", industry: "Software & IT Services", marketCapValue: 1.59, marketCapUnit: "T", peRatio: 26.8, pegRatio: -15.51 },
-  { symbol: "TSLA", name: "Tesla", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "Automobiles & Auto P...", marketCapValue: 1.30, marketCapUnit: "T", peRatio: 320.2, pegRatio: -7.57 },
-  { symbol: "BRK-A", name: "Berkshire Hathaway A", exchange: "NYSE", sector: "Consumer Non-Cyclic...", industry: "Consumer Goods Con...", marketCapValue: 1.05, marketCapUnit: "T", peRatio: 15.7, pegRatio: -0.62 },
-  { symbol: "WMT", name: "Walmart", exchange: "NASDAQ", sector: "Consumer Non-Cyclic...", industry: "Food & Drug Retailing", marketCapValue: 1.03, marketCapUnit: "T", peRatio: 47.3, pegRatio: 3.45 },
-  { symbol: "LLY", name: "Eli Lilly", exchange: "NYSE", sector: "Healthcare", industry: "Pharmaceuticals", marketCapValue: 0.89, marketCapUnit: "T", peRatio: 85.2, pegRatio: 1.92 },
-  { symbol: "JPM", name: "JPMorgan Chase", exchange: "NYSE", sector: "Financials", industry: "Banks", marketCapValue: 0.87, marketCapUnit: "T", peRatio: 12.1, pegRatio: 2.15 },
-  { symbol: "V", name: "Visa", exchange: "NYSE", sector: "Financials", industry: "Credit Services", marketCapValue: 0.85, marketCapUnit: "T", peRatio: 32.4, pegRatio: 1.68 },
-  { symbol: "MA", name: "Mastercard", exchange: "NYSE", sector: "Financials", industry: "Credit Services", marketCapValue: 0.83, marketCapUnit: "T", peRatio: 38.6, pegRatio: 2.21 },
-  { symbol: "XOM", name: "Exxon Mobil", exchange: "NYSE", sector: "Energy", industry: "Oil & Gas", marketCapValue: 0.79, marketCapUnit: "T", peRatio: 12.8, pegRatio: 1.45 },
-  { symbol: "UNH", name: "UnitedHealth", exchange: "NYSE", sector: "Healthcare", industry: "Health Insurance", marketCapValue: 0.75, marketCapUnit: "T", peRatio: 23.5, pegRatio: 1.82 },
-  { symbol: "JNJ", name: "Johnson & Johnson", exchange: "NYSE", sector: "Healthcare", industry: "Pharmaceuticals", marketCapValue: 0.72, marketCapUnit: "T", peRatio: 21.3, pegRatio: 3.12 },
-  { symbol: "PG", name: "Procter & Gamble", exchange: "NYSE", sector: "Consumer Non-Cyclic...", industry: "Household Products", marketCapValue: 0.68, marketCapUnit: "T", peRatio: 26.8, pegRatio: 3.45 },
-  { symbol: "HD", name: "Home Depot", exchange: "NYSE", sector: "Consumer Cyclicals", industry: "Home Improvement", marketCapValue: 0.65, marketCapUnit: "T", peRatio: 24.2, pegRatio: 2.18 },
-  { symbol: "CVX", name: "Chevron", exchange: "NYSE", sector: "Energy", industry: "Oil & Gas", marketCapValue: 0.62, marketCapUnit: "T", peRatio: 14.5, pegRatio: 1.78 },
+  { symbol: "NVDA", name: "NVIDIA Corp.", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors", marketCapValue: 4.46, marketCapUnit: "T", peRatio: 37.4, pegRatio: 0.55 },
+  { symbol: "GOOGL", name: "Alphabet Inc. (Class A)", exchange: "NASDAQ", sector: "Technology", industry: "Software & IT Services", marketCapValue: 3.85, marketCapUnit: "T", peRatio: 29.6, pegRatio: 0.79 },
+  { symbol: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Consumer Electronics", marketCapValue: 3.82, marketCapUnit: "T", peRatio: 33.0, pegRatio: 1.23 },
+  { symbol: "MSFT", name: "Microsoft Corp.", exchange: "NASDAQ", sector: "Technology", industry: "Software & Cloud Services", marketCapValue: 2.77, marketCapUnit: "T", peRatio: 23.2, pegRatio: 0.82 },
+  { symbol: "AMZN", name: "Amazon.com Inc.", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "E-Commerce & Cloud", marketCapValue: 2.51, marketCapUnit: "T", peRatio: 32.4, pegRatio: 0.98 },
+  { symbol: "AVGO", name: "Broadcom Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors & Infra", marketCapValue: 1.67, marketCapUnit: "T", peRatio: 69.0, pegRatio: 0.42 },
+  { symbol: "META", name: "Meta Platforms Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Social Platforms & AI", marketCapValue: 1.59, marketCapUnit: "T", peRatio: 26.8, pegRatio: -15.51 },
+  { symbol: "TSLA", name: "Tesla Inc.", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "Automotive & Clean Energy", marketCapValue: 1.30, marketCapUnit: "T", peRatio: 320.2, pegRatio: -7.57 },
+  { symbol: "BRK-A", name: "Berkshire Hathaway A", exchange: "NYSE", sector: "Financials", industry: "Multi-Sector Holding", marketCapValue: 1.05, marketCapUnit: "T", peRatio: 15.7, pegRatio: -0.62 },
+  { symbol: "WMT", name: "Walmart Inc.", exchange: "NASDAQ", sector: "Consumer Non-Cyclicals", industry: "Hypermarkets & Supercenters", marketCapValue: 1.03, marketCapUnit: "T", peRatio: 47.3, pegRatio: 3.45 },
+  { symbol: "LLY", name: "Eli Lilly and Co.", exchange: "NYSE", sector: "Healthcare", industry: "Pharmaceuticals & Biotech", marketCapValue: 0.89, marketCapUnit: "T", peRatio: 85.2, pegRatio: 1.92 },
+  { symbol: "JPM", name: "JPMorgan Chase & Co.", exchange: "NYSE", sector: "Financials", industry: "Diversified Banking", marketCapValue: 0.87, marketCapUnit: "T", peRatio: 12.1, pegRatio: 2.15 },
+  { symbol: "V", name: "Visa Inc.", exchange: "NYSE", sector: "Financials", industry: "Payment Processing", marketCapValue: 0.85, marketCapUnit: "T", peRatio: 32.4, pegRatio: 1.68 },
+  { symbol: "MA", name: "Mastercard Inc.", exchange: "NYSE", sector: "Financials", industry: "Payment Processing", marketCapValue: 0.83, marketCapUnit: "T", peRatio: 38.6, pegRatio: 2.21 },
+  { symbol: "XOM", name: "Exxon Mobil Corp.", exchange: "NYSE", sector: "Energy", industry: "Integrated Oil & Gas", marketCapValue: 0.79, marketCapUnit: "T", peRatio: 12.8, pegRatio: 1.45 },
+  { symbol: "UNH", name: "UnitedHealth Group Inc.", exchange: "NYSE", sector: "Healthcare", industry: "Managed Healthcare", marketCapValue: 0.75, marketCapUnit: "T", peRatio: 23.5, pegRatio: 1.82 },
+  { symbol: "JNJ", name: "Johnson & Johnson", exchange: "NYSE", sector: "Healthcare", industry: "Pharmaceuticals & MedTech", marketCapValue: 0.72, marketCapUnit: "T", peRatio: 21.3, pegRatio: 3.12 },
+  { symbol: "PG", name: "Procter & Gamble Co.", exchange: "NYSE", sector: "Consumer Non-Cyclicals", industry: "Household & Personal Products", marketCapValue: 0.68, marketCapUnit: "T", peRatio: 26.8, pegRatio: 3.45 },
+  { symbol: "HD", name: "The Home Depot Inc.", exchange: "NYSE", sector: "Consumer Cyclicals", industry: "Home Improvement Retail", marketCapValue: 0.65, marketCapUnit: "T", peRatio: 24.2, pegRatio: 2.18 },
+  { symbol: "CVX", name: "Chevron Corp.", exchange: "NYSE", sector: "Energy", industry: "Integrated Oil & Gas", marketCapValue: 0.62, marketCapUnit: "T", peRatio: 14.5, pegRatio: 1.78 },
+  { symbol: "COST", name: "Costco Wholesale Corp.", exchange: "NASDAQ", sector: "Consumer Non-Cyclicals", industry: "Wholesale Clubs", marketCapValue: 0.44, marketCapUnit: "T", peRatio: 52.8, pegRatio: 4.12 },
+  { symbol: "ORCL", name: "Oracle Corp.", exchange: "NYSE", sector: "Technology", industry: "Enterprise Cloud Software", marketCapValue: 0.49, marketCapUnit: "T", peRatio: 39.5, pegRatio: 2.05 },
+  { symbol: "BAC", name: "Bank of America Corp.", exchange: "NYSE", sector: "Financials", industry: "Diversified Banking", marketCapValue: 0.35, marketCapUnit: "T", peRatio: 13.6, pegRatio: 1.85 },
+  { symbol: "KO", name: "The Coca-Cola Co.", exchange: "NYSE", sector: "Consumer Non-Cyclicals", industry: "Non-Alcoholic Beverages", marketCapValue: 0.31, marketCapUnit: "T", peRatio: 26.4, pegRatio: 3.20 },
+  { symbol: "PEP", name: "PepsiCo Inc.", exchange: "NASDAQ", sector: "Consumer Non-Cyclicals", industry: "Beverages & Snacks", marketCapValue: 0.25, marketCapUnit: "T", peRatio: 22.8, pegRatio: 2.90 },
+  { symbol: "ADBE", name: "Adobe Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Creative Software", marketCapValue: 0.22, marketCapUnit: "T", peRatio: 41.2, pegRatio: 1.65 },
+  { symbol: "CRM", name: "Salesforce Inc.", exchange: "NYSE", sector: "Technology", industry: "CRM & Enterprise Cloud", marketCapValue: 0.28, marketCapUnit: "T", peRatio: 48.0, pegRatio: 1.95 },
+  { symbol: "AMD", name: "Advanced Micro Devices", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors & CPU/GPU", marketCapValue: 0.24, marketCapUnit: "T", peRatio: 110.4, pegRatio: 1.15 },
+  { symbol: "NFLX", name: "Netflix Inc.", exchange: "NASDAQ", sector: "Communication Services", industry: "Entertainment & Streaming", marketCapValue: 0.38, marketCapUnit: "T", peRatio: 45.6, pegRatio: 1.42 },
+  { symbol: "QCOM", name: "Qualcomm Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Mobile & Wireless Tech", marketCapValue: 0.19, marketCapUnit: "T", peRatio: 17.8, pegRatio: 1.25 },
+  { symbol: "TMO", name: "Thermo Fisher Scientific", exchange: "NYSE", sector: "Healthcare", industry: "Life Sciences & Diagnostics", marketCapValue: 0.21, marketCapUnit: "T", peRatio: 31.2, pegRatio: 2.45 },
+  { symbol: "DIS", name: "The Walt Disney Co.", exchange: "NYSE", sector: "Communication Services", industry: "Media & Entertainment", marketCapValue: 0.20, marketCapUnit: "T", peRatio: 35.8, pegRatio: 1.70 },
+  { symbol: "INTC", name: "Intel Corp.", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductors & Foundry", marketCapValue: 0.11, marketCapUnit: "T", peRatio: -42.0, pegRatio: -3.10 },
+  { symbol: "CSCO", name: "Cisco Systems Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Networking & Security", marketCapValue: 0.23, marketCapUnit: "T", peRatio: 20.4, pegRatio: 2.80 },
+  { symbol: "IBM", name: "International Business Machines", exchange: "NYSE", sector: "Technology", industry: "IT Infrastructure & AI", marketCapValue: 0.21, marketCapUnit: "T", peRatio: 22.1, pegRatio: 2.10 },
+  { symbol: "UBER", name: "Uber Technologies Inc.", exchange: "NYSE", sector: "Consumer Cyclicals", industry: "Ride-Hailing & Mobility", marketCapValue: 0.16, marketCapUnit: "T", peRatio: 34.0, pegRatio: 0.88 },
+  { symbol: "TXN", name: "Texas Instruments Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Analog Semiconductors", marketCapValue: 0.18, marketCapUnit: "T", peRatio: 32.5, pegRatio: 3.60 },
+  { symbol: "NOW", name: "ServiceNow Inc.", exchange: "NYSE", sector: "Technology", industry: "Enterprise Workflow", marketCapValue: 0.19, marketCapUnit: "T", peRatio: 88.0, pegRatio: 2.10 },
+  { symbol: "AMAT", name: "Applied Materials Inc.", exchange: "NASDAQ", sector: "Technology", industry: "Semiconductor Equipment", marketCapValue: 0.15, marketCapUnit: "T", peRatio: 21.0, pegRatio: 1.35 },
+  { symbol: "BKNG", name: "Booking Holdings Inc.", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "Online Travel Agency", marketCapValue: 0.16, marketCapUnit: "T", peRatio: 28.5, pegRatio: 1.20 },
+  { symbol: "PLTR", name: "Palantir Technologies", exchange: "NASDAQ", sector: "Technology", industry: "Big Data & AI Platforms", marketCapValue: 0.14, marketCapUnit: "T", peRatio: 125.0, pegRatio: 2.40 },
+  { symbol: "COIN", name: "Coinbase Global Inc.", exchange: "NASDAQ", sector: "Financials", industry: "Digital Asset Exchange", marketCapValue: 0.08, marketCapUnit: "T", peRatio: 44.2, pegRatio: 0.95 },
+  { symbol: "SNOW", name: "Snowflake Inc.", exchange: "NYSE", sector: "Technology", industry: "Cloud Data Platform", marketCapValue: 0.06, marketCapUnit: "T", peRatio: -65.0, pegRatio: -2.10 },
+  { symbol: "SHOP", name: "Shopify Inc.", exchange: "NYSE", sector: "Technology", industry: "E-Commerce Infrastructure", marketCapValue: 0.13, marketCapUnit: "T", peRatio: 78.5, pegRatio: 1.60 },
+  { symbol: "CRWD", name: "CrowdStrike Holdings", exchange: "NASDAQ", sector: "Technology", industry: "Cybersecurity & Cloud", marketCapValue: 0.09, marketCapUnit: "T", peRatio: 82.0, pegRatio: 1.75 },
+  { symbol: "PANW", name: "Palo Alto Networks", exchange: "NASDAQ", sector: "Technology", industry: "Network Cybersecurity", marketCapValue: 0.12, marketCapUnit: "T", peRatio: 46.8, pegRatio: 2.15 },
+  { symbol: "ABNB", name: "Airbnb Inc.", exchange: "NASDAQ", sector: "Consumer Cyclicals", industry: "Short-Term Vacation Rentals", marketCapValue: 0.09, marketCapUnit: "T", peRatio: 30.2, pegRatio: 1.45 },
+  { symbol: "SQ", name: "Block Inc.", exchange: "NYSE", sector: "Financials", industry: "Fintech & Payments", marketCapValue: 0.05, marketCapUnit: "T", peRatio: 36.4, pegRatio: 0.85 },
+  { symbol: "SPOT", name: "Spotify Technology", exchange: "NYSE", sector: "Communication Services", industry: "Audio & Music Streaming", marketCapValue: 0.09, marketCapUnit: "T", peRatio: 72.0, pegRatio: 1.10 }
 ];
+
+const INITIAL_BATCH_SIZE = 15;
+const BATCH_INCREMENT = 12;
 
 export default function History() {
   const [stocks, setStocks] = useState<StockData[]>(INITIAL_STOCKS);
-  const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_BATCH_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isLiveSyncing, setIsLiveSyncing] = useState(false);
+  const [lastSyncedTime, setLastSyncedTime] = useState<string | null>(null);
+  
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const tableContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const itemsPerPage = 10;
-  const totalPages = Math.ceil(stocks.length / itemsPerPage);
-  const paginatedStocks = stocks.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  // 1. Fetch real market data from Yahoo Finance API endpoint on mount
+  useEffect(() => {
+    let isMounted = true;
 
+    async function fetchRealMarketData() {
+      if (!isMounted) return;
+      setIsLiveSyncing(true);
+      try {
+        const topSymbols = INITIAL_STOCKS.slice(0, 20).map(s => s.symbol).join(",");
+        const res = await fetch(`/api/stock?tickers=${topSymbols}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0 && isMounted) {
+            setStocks((prev) =>
+              prev.map((stock) => {
+                const real = json.data.find((d: any) => d.symbol === stock.symbol);
+                if (!real) return stock;
+
+                let mcVal = stock.marketCapValue;
+                let mcUnit = stock.marketCapUnit;
+                if (real.marketCap && real.marketCap > 0) {
+                  if (real.marketCap >= 1e12) {
+                    mcVal = Number((real.marketCap / 1e12).toFixed(2));
+                    mcUnit = "T";
+                  } else if (real.marketCap >= 1e9) {
+                    mcVal = Number((real.marketCap / 1e9).toFixed(2));
+                    mcUnit = "B";
+                  }
+                }
+
+                const peVal = real.trailingPE !== null && real.trailingPE !== undefined && real.trailingPE > 0
+                  ? Number(real.trailingPE)
+                  : stock.peRatio;
+
+                const pegVal = real.pegRatio !== null && real.pegRatio !== undefined
+                  ? Number(real.pegRatio)
+                  : stock.pegRatio;
+
+                const finalSector = (real.sector && real.sector !== "-") ? real.sector : stock.sector;
+                const finalIndustry = (real.industry && real.industry !== "-") ? real.industry : stock.industry;
+                const finalExchange = (real.exchange && real.exchange !== "-") ? real.exchange : stock.exchange;
+
+                return {
+                  ...stock,
+                  name: real.companyName || stock.name,
+                  exchange: finalExchange,
+                  sector: finalSector,
+                  industry: finalIndustry,
+                  marketCapValue: mcVal,
+                  marketCapUnit: mcUnit,
+                  peRatio: peVal,
+                  pegRatio: pegVal,
+                };
+              })
+            );
+            setLastSyncedTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          }
+        }
+      } catch (err) {
+        console.warn("[History] Live market data sync warning:", err);
+      } finally {
+        if (isMounted) setIsLiveSyncing(false);
+      }
+    }
+
+    fetchRealMarketData();
+    const interval = setInterval(fetchRealMarketData, 45000); // 45s periodic real sync
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // 2. Micro-fluctuation telemetry ticker effect for visual dynamism
   useEffect(() => {
     const interval = setInterval(() => {
       setStocks((prevStocks) =>
         prevStocks.map((stock) => {
-          const multiplier = 1 + (Math.random() * 0.004 - 0.002);
-          const pegChange = Math.random() * 0.02 - 0.01;
+          const multiplier = 1 + (Math.random() * 0.002 - 0.001);
+          const pegChange = Math.random() * 0.008 - 0.004;
 
           return {
             ...stock,
-            marketCapValue: stock.marketCapValue * multiplier,
-            peRatio: stock.peRatio * multiplier,
-            pegRatio: stock.pegRatio + pegChange,
+            marketCapValue: Number((stock.marketCapValue * multiplier).toFixed(2)),
+            peRatio: Number((stock.peRatio * multiplier).toFixed(1)),
+            pegRatio: Number((stock.pegRatio + pegChange).toFixed(2)),
           };
         })
       );
-    }, 1500);
+    }, 2500);
 
     return () => clearInterval(interval);
   }, []);
 
-  const toggleSelect = (symbol: string) => {
-    setSelectedStocks((prev) =>
-      prev.includes(symbol)
-        ? prev.filter((s) => s !== symbol)
-        : [...prev, symbol]
+  // Filtered dataset based on search query
+  const filteredStocks = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return stocks;
+
+    return stocks.filter((stock) =>
+      stock.symbol.toLowerCase().includes(query) ||
+      stock.name.toLowerCase().includes(query) ||
+      stock.sector.toLowerCase().includes(query) ||
+      stock.industry.toLowerCase().includes(query) ||
+      stock.exchange.toLowerCase().includes(query)
     );
-  };
+  }, [stocks, searchQuery]);
+
+  // Reset visible count when search query changes
+  useEffect(() => {
+    setVisibleCount(INITIAL_BATCH_SIZE);
+  }, [searchQuery]);
+
+  // Infinite Scroll Trigger
+  const loadMore = useCallback(() => {
+    if (visibleCount >= filteredStocks.length || isLoadingMore) return;
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => Math.min(prev + BATCH_INCREMENT, filteredStocks.length));
+      setIsLoadingMore(false);
+    }, 150);
+  }, [visibleCount, filteredStocks.length, isLoadingMore]);
+
+  // IntersectionObserver specifically inside the table card scroll container
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const container = tableContainerRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMore();
+        }
+      },
+      { root: container, rootMargin: "150px", threshold: 0.05 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  // Scroll listener on the table container as a robust secondary trigger
+  const handleContainerScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollTop + target.clientHeight >= target.scrollHeight - 120) {
+      loadMore();
+    }
+  }, [loadMore]);
+
+  const displayedStocks = filteredStocks.slice(0, visibleCount);
 
   return (
     <div>
-      <h2 className="dash-dl-title">Data Logs</h2>
-      
-      <div className="dash-table-wrap">
+      {/* Header Toolbar with Search Bar */}
+      <div className="dash-dl-head">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h2 className="dash-dl-title">Data Logs</h2>
+          {lastSyncedTime && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontFamily: "var(--mono)", color: "var(--up)", background: "var(--up-soft)", padding: "3px 8px", borderRadius: 4, border: "1px solid rgba(14, 126, 72, 0.2)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--up)", display: "inline-block" }}></span>
+              Live Synced {lastSyncedTime}
+            </span>
+          )}
+        </div>
+
+        <div className="dash-dl-toolbar">
+          <div className="dash-search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              className="dash-search-input"
+              placeholder="Search symbol, company name, sector, or industry..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="dash-search-clear"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          <div className="dash-dl-badge">
+            {displayedStocks.length} of {filteredStocks.length}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Table Card (Only this scrolls) */}
+      <div
+        ref={tableContainerRef}
+        onScroll={handleContainerScroll}
+        className="dash-table-wrap"
+      >
         <table className="dash-table">
           <thead>
             <tr>
-              <th style={{ width: 40 }}></th>
-              <th style={{ width: 40 }}>#</th>
+              <th style={{ width: 45 }}>#</th>
               <th>Company</th>
               <th>Name</th>
               <th>Exchange</th>
               <th>Sector</th>
               <th>Industry</th>
-              <th>Market Cap</th>
-              <th>P/E Ratio</th>
-              <th>PEG Ratio</th>
+              <th style={{ textAlign: "right" }}>Market Cap</th>
+              <th style={{ textAlign: "right" }}>P/E Ratio</th>
+              <th style={{ textAlign: "right" }}>PEG Ratio</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedStocks.map((r, index) => {
-              const peClass = r.peRatio > 60 ? 'dash-neg' : '';
-              const pegClass = r.pegRatio < 0 ? 'dash-neg' : (r.pegRatio < 1 ? 'dash-pos' : '');
-              const isChecked = selectedStocks.includes(r.symbol);
+            {displayedStocks.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: "center", padding: "48px 16px", color: "var(--muted)" }}>
+                  <div style={{ fontFamily: "var(--mono)", fontSize: "13px" }}>
+                    No equities found matching &quot;{searchQuery}&quot;
+                  </div>
+                  <div style={{ fontSize: "12px", color: "var(--faint)", marginTop: "6px" }}>
+                    Try searching by another ticker symbol, company name, or sector.
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              displayedStocks.map((r, index) => {
+                const peClass = r.peRatio > 60 ? 'dash-neg' : (r.peRatio > 0 && r.peRatio < 25 ? 'dash-pos' : '');
+                const pegClass = r.pegRatio < 0 ? 'dash-neg' : (r.pegRatio < 1 ? 'dash-pos' : '');
 
-              return (
-                <tr key={r.symbol}>
-                  <td>
-                    <span
-                      className="dash-checkbox"
-                      onClick={() => toggleSelect(r.symbol)}
-                      style={{
-                        background: isChecked ? "var(--ink)" : "transparent",
-                        borderColor: isChecked ? "var(--ink)" : "var(--line)"
-                      }}
-                    ></span>
-                  </td>
-                  <td className="dash-num">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td>
-                    <div className="dash-co-cell">
-                      <span className="dash-co-logo">{LOGOS[r.symbol] || r.symbol.charAt(0)}</span>
-                      {r.symbol}
-                    </div>
-                  </td>
-                  <td>{r.name}</td>
-                  <td>{r.exchange}</td>
-                  <td>{r.sector}</td>
-                  <td>{r.industry}</td>
-                  <td className="dash-num"><strong>${r.marketCapValue.toFixed(2)}{r.marketCapUnit}</strong></td>
-                  <td className={`dash-num ${peClass}`}>{r.peRatio.toFixed(1)}x</td>
-                  <td className={`dash-num ${pegClass}`}>{r.pegRatio.toFixed(2)}</td>
-                </tr>
-              );
-            })}
+                return (
+                  <tr key={r.symbol}>
+                    <td className="dash-num" style={{ color: "var(--faint)", fontSize: "12px" }}>{index + 1}</td>
+                    <td>
+                      <div className="dash-co-cell">
+                        <CompanyLogo symbol={r.symbol} />
+                        <span>{r.symbol}</span>
+                      </div>
+                    </td>
+                    <td style={{ fontWeight: 500 }}>{r.name}</td>
+                    <td><span style={{ fontFamily: "var(--mono)", fontSize: "11.5px", color: "var(--muted)" }}>{r.exchange}</span></td>
+                    <td>{r.sector}</td>
+                    <td style={{ color: "var(--muted)", fontSize: "12.5px" }}>{r.industry}</td>
+                    <td className="dash-num" style={{ textAlign: "right" }}>
+                      <strong>${r.marketCapValue.toFixed(2)}{r.marketCapUnit}</strong>
+                    </td>
+                    <td className={`dash-num ${peClass}`} style={{ textAlign: "right" }}>
+                      {r.peRatio > 0 ? `${r.peRatio.toFixed(1)}x` : `${r.peRatio.toFixed(1)}`}
+                    </td>
+                    <td className={`dash-num ${pegClass}`} style={{ textAlign: "right" }}>
+                      {r.pegRatio.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
-      </div>
 
-      <div className="dash-pagination">
-        <button
-          className="dash-pg-btn"
-          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-        >
-          ‹ Previous
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <button
-            key={page}
-            className={`dash-pg-btn ${currentPage === page ? "active" : ""}`}
-            onClick={() => setCurrentPage(page)}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          className="dash-pg-btn"
-          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-          disabled={currentPage === totalPages}
-        >
-          Next ›
-        </button>
+        {/* Infinite Scroll Sentinel & Loader */}
+        {visibleCount < filteredStocks.length && (
+          <div ref={sentinelRef} className="dash-infinite-loading">
+            <svg style={{ animation: "spin 1s linear infinite", width: 14, height: 14 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" />
+            </svg>
+            <span>Loading additional equities ({visibleCount} of {filteredStocks.length})...</span>
+          </div>
+        )}
+
+        {visibleCount >= filteredStocks.length && filteredStocks.length > 0 && (
+          <div className="dash-infinite-end">
+            All records loaded • {filteredStocks.length} equities indexed
+          </div>
+        )}
       </div>
     </div>
   );

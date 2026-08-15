@@ -98,27 +98,49 @@ export async function fetchQuoteData(ticker: string): Promise<StockQuote | null>
       }
     }
 
-    // 2. RECENT NEWS (using search API)
+    // 2. SEARCH API - Fetch News + Profile Metadata (Sector, Industry, Long Name, Exchange)
     let recentNews: { title: string; publisher: string; link: string }[] = [];
-    try {
-      const newsUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${symbol}&quotesCount=0&newsCount=5`;
-      const newsRes = await fetch(newsUrl, { headers, cache: 'no-store' });
+    let sector = "Technology";
+    let industry = "Semiconductors";
+    let exchange = meta.exchangeName || "NASDAQ";
+    let companyName = meta.shortName || meta.longName || symbol;
 
-      if (newsRes.ok) {
-        const newsData = await newsRes.json();
-        recentNews = (newsData.news || []).map((item: any) => ({
+    try {
+      const searchUrl = `https://query1.finance.yahoo.com/v1/finance/search?q=${symbol}&quotesCount=1&newsCount=5`;
+      const searchRes = await fetch(searchUrl, { headers, cache: 'no-store' });
+
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        
+        // Extract real news
+        recentNews = (searchData.news || []).map((item: any) => ({
           title: item.title,
           publisher: item.publisher || 'Yahoo Finance',
           link: item.link
         }));
+
+        // Extract real sector, industry, exchange, and name from quotes[0]
+        const profileQuote = searchData.quotes?.[0];
+        if (profileQuote) {
+          if (profileQuote.sectorDisp || profileQuote.sector) {
+            sector = profileQuote.sectorDisp || profileQuote.sector;
+          }
+          if (profileQuote.industryDisp || profileQuote.industry) {
+            industry = profileQuote.industryDisp || profileQuote.industry;
+          }
+          if (profileQuote.exchDisp || profileQuote.exchange) {
+            exchange = profileQuote.exchDisp || profileQuote.exchange;
+          }
+          if (profileQuote.longname || profileQuote.shortname) {
+            companyName = profileQuote.longname || profileQuote.shortname;
+          }
+        }
       }
-    } catch (newsError) {
-      console.error(`[yahoo-finance.ts] Failed to fetch news for ${symbol}:`, newsError);
+    } catch (searchError) {
+      console.error(`[yahoo-finance.ts] Failed to fetch search metadata for ${symbol}:`, searchError);
     }
 
-    // 3. TAMBAHAN BARU: FETCH DATA FUNDAMENTAL DARI QUOTE SUMMARY API
-    let sector = "Technology";
-    let industry = "-";
+    // 3. FETCH VALUATION METRICS FROM QUOTE SUMMARY (Fallback to calculated or raw multiples)
     let trailingPE = null;
     let pegRatio = null;
     let actualMarketCap = meta.marketCap || 0;
@@ -140,20 +162,21 @@ export async function fetchQuoteData(ticker: string): Promise<StockQuote | null>
         }
       }
     } catch (summaryError) {
-      console.error(`[yahoo-finance.ts] Failed to fetch fundamentals for ${symbol}:`, summaryError);
+      // Handled quietly as crumb is restricted
     }
 
-    // 4. COMBINE ALL DATA (Ubah bagian return Anda menjadi seperti ini)
+    // 4. COMBINE ALL DATA
     return {
       symbol: meta.symbol || symbol,
-      companyName: meta.shortName || meta.longName || symbol,
+      companyName: companyName,
       currentPrice: meta.regularMarketPrice || closePrices[closePrices.length - 1] || 0,
       marketCap: actualMarketCap,
-      sector: sector,             // Tambahkan ini agar dibaca oleh History.tsx
-      industry: industry,         // Tambahkan ini
-      trailingPE: trailingPE,     // Tambahkan ini
-      pegRatio: pegRatio,         // Tambahkan ini
-      peRatio: trailingPE || 0,   // Fallback PE Ratio untuk komponen lain
+      sector: sector,
+      industry: industry,
+      exchange: exchange,
+      trailingPE: trailingPE,
+      pegRatio: pegRatio,
+      peRatio: trailingPE || 0,
       eps: 0, 
       dividendYield: 0, 
       week52High: meta.fiftyTwoWeekHigh || 0,
