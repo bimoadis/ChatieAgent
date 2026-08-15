@@ -213,7 +213,10 @@ export function DashboardView({ history }: DashboardViewProps) {
   const prevSentimentLabel = previousScore >= 75 ? "Extreme Greed" : previousScore >= 51 ? "Greed" : previousScore >= 45 ? "Neutral" : previousScore >= 25 ? "Fear" : "Extreme Fear";
 
   return (
-    <div>
+    <div className="dash-overview-wrap">
+      {/* 3D Global Grid Sphere Background positioned freely across the top section */}
+      <div className="dash-hero-globe-bg" />
+
       {/* Hero Banner */}
       <div className="dash-hero">
         <div className="dash-hero-content">
@@ -233,9 +236,6 @@ export function DashboardView({ history }: DashboardViewProps) {
             </span>
           )}
         </div>
-
-        {/* 3D Global Grid Sphere Background */}
-        <div className="dash-hero-globe-bg" />
       </div>
 
       {/* Ticker Grid */}

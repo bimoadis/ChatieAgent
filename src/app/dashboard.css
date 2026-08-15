@@ -20,6 +20,37 @@
   --r: 14px;
 }
 
+/* ---------- SLEEK THEMED SCROLLBARS ---------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.65);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 /* ---------- DASHBOARD CONTAINER ---------- */
 .dashboard-root {
   display: flex;
@@ -329,10 +360,15 @@
 }
 
 /* ---------- SYSTEM OVERVIEW VIEW ---------- */
+.dash-overview-wrap {
+  position: relative;
+  overflow: visible;
+}
+
 .dash-hero {
   padding: 8px 0 20px 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 12px;
   background: transparent;
   border: none;
@@ -342,6 +378,7 @@
   justify-content: space-between;
   align-items: flex-start;
   min-height: 140px;
+  z-index: 2;
 }
 
 .dash-hero-content {
@@ -412,19 +449,19 @@
 
 .dash-hero-globe-bg {
   position: absolute;
-  top: 10%;
-  right: 0;
-  bottom: -10%;
-  width: 65%;
+  top: -45px;
+  right: -25px;
+  width: 640px;
+  height: 400px;
   background-image: url('/images/globe-hero.png');
-  background-size: 90% auto;
-  background-position: right 60%;
+  background-size: contain;
+  background-position: top right;
   background-repeat: no-repeat;
   opacity: 0.95;
   pointer-events: none;
-  z-index: 1;
-  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 15%, rgba(0, 0, 0, 1) 50%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 15%, rgba(0, 0, 0, 1) 50%);
+  z-index: 0;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.35) 15%, rgba(0, 0, 0, 1) 50%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.35) 15%, rgba(0, 0, 0, 1) 50%);
 }
 
 .dash-ticker-grid {
