@@ -130,6 +130,7 @@ export default function DashboardPage() {
   const viewTitles: Record<string, string> = {
     overview: "System Overview",
     core: "Chatie Core",
+    discussion: "Council Discussion",
     council: "Council Discussion",
     logs: "Data Logs",
     config: "Configuration",
@@ -180,7 +181,7 @@ export default function DashboardPage() {
         <main className="dash-main">
           {activeView === "overview" && <DashboardView history={formattedDashboardHistory} />}
           {activeView === "core" && <StockAnalyzer persona={persona} apiKey={apiKey} />}
-          {activeView === "council" && <AgentDiscussion />}
+          {(activeView === "discussion" || activeView === "council") && <AgentDiscussion />}
           {activeView === "logs" && <History />}
           {activeView === "config" && <Settings apiKey={apiKey} onApiKeyChange={handleApiKeyChange} />}
         </main>

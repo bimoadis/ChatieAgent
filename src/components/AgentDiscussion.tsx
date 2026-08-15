@@ -4,15 +4,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 const MEMBERS = [
-  { id: "Aswath Damodaran", role: "Valuation Dean", defaultState: "" },
-  { id: "Ben Graham", role: "Value Godfather", defaultState: "" },
-  { id: "Bill Ackman", role: "Activist", defaultState: "" },
-  { id: "Cathie Wood", role: "Growth/Disruption", defaultState: "active-a" },
-  { id: "Charlie Munger", role: "Quality at Fair Price", defaultState: "" },
-  { id: "Michael Burry", role: "Deep Value/Contrarian", defaultState: "active-b" },
-  { id: "Mohnish Pabrai", role: "Dhandho Investor", defaultState: "" },
-  { id: "Nassim Taleb", role: "Tail Risk/Antifragile", defaultState: "" },
-  { id: "Peter Lynch", role: "Ten-Bagger Hunter", defaultState: "" },
+  { id: "Aswath Damodaran", role: "Valuation Dean", avatar: "/avatars/Aswath Damodaran.png" },
+  { id: "Benjamin Graham", role: "Value Godfather", avatar: "/avatars/Benjamin Graham.png" },
+  { id: "Bill Ackman", role: "Activist Investor", avatar: "/avatars/Bill Ackman.png" },
+  { id: "Cathie Wood", role: "Growth & Disruption", avatar: "/avatars/Cathie Wood.png" },
+  { id: "Charlie Munger", role: "Quality at Fair Price", avatar: "/avatars/Charlie Munger.png" },
+  { id: "Michael Burry", role: "Deep Value & Contrarian", avatar: "/avatars/Michael Burry.png" },
+  { id: "Mohnish Pabrai", role: "Dhandho Investor", avatar: "/avatars/Mohnish Pabrai.png" },
+  { id: "Nassim Nicholas Taleb", role: "Tail Risk & Antifragile", avatar: "/avatars/Nassim Nicholas Taleb.png" },
+  { id: "Peter Lynch", role: "Ten-Bagger Hunter", avatar: "/avatars/Peter Lynch.png" },
 ];
 
 type Message = {
@@ -118,9 +118,19 @@ export default function AgentDiscussion() {
                   onClick={() => toggleAgent(m.id)}
                   className={`dash-member ${stateClass}`}
                 >
-                  <div>
-                    <div className="dash-member-name">{m.id}</div>
-                    <div className="dash-member-role">{m.role}</div>
+                  <div className="dash-member-left">
+                    <img
+                      src={m.avatar}
+                      alt={m.id}
+                      className="dash-member-img"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                    <div>
+                      <div className="dash-member-name">{m.id}</div>
+                      <div className="dash-member-role">{m.role}</div>
+                    </div>
                   </div>
                   <div className="dash-member-dot"></div>
                 </button>
@@ -153,6 +163,8 @@ export default function AgentDiscussion() {
               <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
                 {messages.map((msg) => {
                   const isUser = msg.role === "user";
+                  const agentObj = !isUser ? MEMBERS.find(m => m.id.toLowerCase() === msg.agentName?.toLowerCase() || msg.agentName?.toLowerCase().includes(m.id.toLowerCase())) : null;
+
                   return (
                     <div
                       key={msg.id}
@@ -166,6 +178,13 @@ export default function AgentDiscussion() {
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontFamily: "var(--mono)", color: "var(--faint)" }}>
+                        {agentObj && (
+                          <img
+                            src={agentObj.avatar}
+                            alt={msg.agentName}
+                            style={{ width: 18, height: 18, borderRadius: "50%", objectFit: "cover", border: "1px solid var(--line)" }}
+                          />
+                        )}
                         <span style={{ fontWeight: 600, color: isUser ? "var(--ink)" : "var(--cobalt)" }}>
                           {isUser ? "Chairman" : msg.agentName}
                         </span>
@@ -189,9 +208,9 @@ export default function AgentDiscussion() {
                   );
                 })}
                 {isLoading && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--muted)", fontSize: 12, fontFamily: "var(--mono)" }}>
-                    <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite", color: "var(--cobalt)" }} />
-                    Committee members analyzing arguments...
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: 12, fontSize: 12, fontFamily: "var(--mono)", color: "var(--muted)" }}>
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    <span>Committee agents are synthesizing viewpoints...</span>
                   </div>
                 )}
                 <div ref={scrollRef} />
@@ -202,22 +221,24 @@ export default function AgentDiscussion() {
           <div className="dash-transcript-foot">
             <input
               type="text"
-              className="dash-transcript-input"
-              placeholder="Present thesis to the room (e.g. 'What is the downside risk of AAPL at 30x PE?')..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-              disabled={isLoading || selectedAgents.length === 0}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Present a ticker or market thesis to the committee (e.g. Is NVDA valuation sustainable?)..."
+              className="dash-transcript-input"
+              disabled={isLoading}
             />
             <button
-              className="dash-send-btn"
               onClick={handleSend}
-              disabled={isLoading || !prompt.trim() || selectedAgents.length === 0}
+              disabled={isLoading || !prompt.trim()}
+              className="dash-btn-primary"
+              style={{ padding: "8px 16px", fontSize: 13, gap: 6 }}
             >
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
-              Execute
+              Deploy
             </button>
           </div>
         </div>
