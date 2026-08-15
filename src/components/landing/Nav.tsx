@@ -42,9 +42,7 @@ export function Nav({ activeSec }: NavProps) {
           ))}
         </ul>
         <div className="right">
-          <Link className="small" href="/dashboard" style={{ color: "var(--muted)" }}>
-            Log in
-          </Link>
+
           <Link className="btn" href="/dashboard">
             Open terminal
           </Link>
@@ -91,9 +89,7 @@ export function Nav({ activeSec }: NavProps) {
             {link.label}
           </a>
         ))}
-        <Link href="/dashboard" className="mp-cta" onClick={() => setIsOpen(false)}>
-          Log in
-        </Link>
+
         <Link href="/dashboard" className="mp-cta" onClick={() => setIsOpen(false)}>
           Open terminal →
         </Link>
