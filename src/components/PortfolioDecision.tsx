@@ -16,14 +16,14 @@ export function PortfolioDecision({ result }: PortfolioDecisionProps) {
   const decisionBg = isBuy
     ? "rgba(14, 126, 72, 0.08)"
     : isSell
-    ? "rgba(220, 38, 38, 0.08)"
-    : "rgba(202, 138, 4, 0.08)";
+      ? "rgba(220, 38, 38, 0.08)"
+      : "rgba(202, 138, 4, 0.08)";
   const decisionColor = isBuy ? "#0E7E48" : isSell ? "#DC2626" : "#CA8A04";
   const decisionBorder = isBuy
     ? "rgba(14, 126, 72, 0.3)"
     : isSell
-    ? "rgba(220, 38, 38, 0.3)"
-    : "rgba(202, 138, 4, 0.3)";
+      ? "rgba(220, 38, 38, 0.3)"
+      : "rgba(202, 138, 4, 0.3)";
 
   const handleShare = () => {
     const text = `Chatie Agent Multi-Agent Equity Terminal analyzed $${symbol}:
@@ -33,7 +33,7 @@ export function PortfolioDecision({ result }: PortfolioDecisionProps) {
 → Risk Profile: ${finalDecision.riskLevel}
 → Consensus: ${finalDecision.summary}
 
-Run your ticker: http://localhost:3000`;
+Run your ticker: https://chatieagent.xyz/`;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "width=550,height=420");
